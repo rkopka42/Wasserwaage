@@ -16,3 +16,6 @@ Temperatur und Gyro haben eigene Kalibrierungsmodi. Beide Sensore benötigen ein
 Der M5 Kompaß ist kaum brauchbar, da durch die Magnete im Gehäuse beeinträchtigt. Ein Kompaßmodul ist nur eingeschränkt nutzbar, da die Anzeige recht einfach ist und das Tablet ohne Umstellungen den Bildschirm nach einiger Zeit abschaltet. Der Temperatursensor muß vom Prozessor entfernt sein (Wärme).
 
 Temperatursensor und Kompaß werden an den I2C Bus angeschlossen. Die Betriebsspannung wird über ADC1 Channel6 (ESP32) gelesen. Eigentlich sollte das D+ Signal eingelesen werden und für das Abschalten benutzt werden, ist aber noch nicht implementiert.
+
+Die SW ist mit/für die Arduino IDE geschrieben mit der ESP32 Erweiterung und folgenden Bibliotheken:
+...
