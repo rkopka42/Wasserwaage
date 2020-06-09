@@ -1,10 +1,12 @@
 # Wasserwaage
 Elektronische Wasserwaage für Womo / Electronic spirit level for camper van
 mit WLAN/Browser Ausgabe
-
+![Bildschirmfoto](http://kopka.at/j/IMG_1477sm.jpg)
 ---
 
 Ein Gyrosensor wird ausgewertet. Danach wird die Lage des Fahrzeugs errechnet, incl. der nötigen Unterlegkeile für die momentane Lage.
+Außer einem mit Arduino programmierten ESP32-Modul wird fast nichts benötigt. Ein DCDC-Wandler für die Stromversorgung. 2 Widerstände für den D+ Eingang. Über I2C ein GyroModul. Nach Wunsch ebenfalls über I2C ein Kompaß und ein Temperaturmeßmodul. Eine LED.
+![Platine](http://kopka.at/j/IMG_1515sm2.jpg)
 
 Die Ausgabe erfolgt über einen WLAN AP und eine Website, in der mit Javascript Canvas das Bild gezeichnet wird. Die Aktualisierung der Seite erfolgt mit Javascript, das ein neues Canvas nachlädt und anzeigt. Auf einer eigenen Seite kann man die Einstellungen ändern und die Sensoren kalibirieren. Die Anzeige ist für meine Android Geräte beginnend mit 800-1000 Pixel Breite ausgelegt.
 
@@ -42,6 +44,8 @@ Die SW ist mit/für die Arduino IDE geschrieben mit der ESP32 Erweiterung und fo
 Einige davon sind schon im ESP32 System enthalten. Andere nicht erwähnte gehören zum Standard Arduino.
 
 Ich habe das Gerät in einem kleinen Gehäuse an der Wand des Womos fixiert, wo ich mit einem Kabel für Updates leicht herankomme. An Verbindungen braucht man nur die Versorgungsspannung und evt. noch D+. Eine LED zeigt blinkend den Betriebszustand. D.h. WLAN aktiv und Client eingeloggt. Mein Tablet ist auf automatische Verbindung eingestellt. Ich brauche dann nur noch einen Browser mit der passenden IP aufrufen, bzw. den entsprechenden Tab anwählen.
+
+Die serielle Schnittstelle (ESP32 Serial2) war ursprünglich für ein weiteres eigenes Gerät gedacht, dessen Daten angezeigt werden sollten. Jetzt vielleicht für die Schnittstelle des Victron Solarreglers.
 
 ----
 
