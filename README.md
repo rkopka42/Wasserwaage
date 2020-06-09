@@ -47,6 +47,10 @@ Ich habe das Gerät in einem kleinen Gehäuse an der Wand des Womos fixiert, wo 
 
 Die serielle Schnittstelle (ESP32 Serial2) war ursprünglich für ein weiteres eigenes Gerät gedacht, dessen Daten angezeigt werden sollten. Jetzt vielleicht für die Schnittstelle des Victron Solarreglers.
 
+Die WLAN Reichweite ist erheblich. Von einem Strand aus über Wasser hatte ich noch aus über 100m Kontakt zum Gerät im Wohnmobil (Aluwände).
+
+Die Grafik zeigt ein Alkovenwohnmobil (wie ich es habe). Wer etwas anderes haben will, muß selber mit den Canvasanweisungen rumbasteln.
+
 ----
 
 Weitere Pläne:
