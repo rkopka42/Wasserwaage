@@ -49,7 +49,8 @@ Die serielle Schnittstelle (ESP32 Serial2) war ursprünglich für ein weiteres e
 
 Die WLAN Reichweite ist erheblich. Von einem Strand aus über Wasser hatte ich noch aus über 100m Kontakt zum Gerät im Wohnmobil (Aluwände).
 
-Die Grafik zeigt ein Alkovenwohnmobil (wie ich es habe). Wer etwas anderes haben will, muß selber mit den Canvasanweisungen rumbasteln.
+Die Grafik zeigt ein Alkovenwohnmobil (wie ich es habe). Wer etwas anderes haben will, muß selber mit den Canvasanweisungen rumbasteln. 
+Das Bild ganz oben stammt von einer frühen Version, wo die Winkel noch nicht korrekt waren. Die Neigung beim Womobild wird übertrieben dargestellt, damit man sie besser erkennen kann. 1° würde sonst in der Auflösung untergehen.
 
 ----
 
