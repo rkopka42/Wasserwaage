@@ -3,6 +3,7 @@
  *           18.01.2020 rKop  M5Stack, Sensor geht, Display (von TFT Version) integriert
  *  0.09.001 24.01.2020 rKop  Canvas in Funktion und als .JS nachgeladen, auch für Kompaß, M5 Kompaß ja, aber komisch
  *  0.09.002 25.01.2020 rKop  CFG umgestellt, Anzeigefehler weg      
+ *  0.09.003 11.06.2020 rKop  offenes Github
  *  
  *        *  -> Spannung und Sleep
  *        
@@ -44,8 +45,8 @@ MMA8452Q accel(0x1D);  //(default 0x1D) kann auch 1C sein
 
 //SSID and Password to your ESP Access Point
 // noch ändern auf conf values !!!!!!!!!!
-const char *ssid = "Wasserwaage";
-const char* password = "ww00aa11";
+//const char *ssid = "Wasserwaage";
+//const char* password = "ww00aa11";
 
 WebServer server(80); //Server on port 80
 
@@ -57,7 +58,7 @@ float humidity = 0;
 float tempC = 0;
 #endif
 
-const int analogInPin = 34; // Spannung ? -> define
+const int analogInPin = 34; // Spannung ? -> define  ADC1_6
 int sensorValue = 0;        // value read from D+
 
 float  keilhoehe=KEIL_HOEHE;
@@ -256,9 +257,11 @@ void setup(void)
 
   // Spannungsmessung
   adc1_config_width(ADC_WIDTH_BIT_12);
-  adc1_config_channel_atten(ADC1_CHANNEL_6,ADC_ATTEN_DB_11);
+  adc1_config_channel_atten(ADC1_CHANNEL_6,ADC_ATTEN_DB_11);  // D+ ? Pin 34
   //int val = adc1_get_raw(ADC1_CHANNEL_6);
-  
+  //adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_2_5); // Verstärkung 2,5dB 2,5V? 0dB =1,1 V Max  // GPIO36
+  //adc1_config_channel_atten(ADC1_CHANNEL_3, ADC_ATTEN_DB_0); //  Verstärkung 0dB =1,1 V Max   // GPIO39
+    
 #ifdef USE_TEMP
   //Initialize the I2C sensors and ping them
   sensor.begin();

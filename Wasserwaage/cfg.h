@@ -70,18 +70,20 @@ conf_t config[] =
     {&confvalues.fcp, -2000, 2000, "0",TYPE_FLOAT_HIDDEN, "fcp", "Kalibrierwert fcp fuer Gyro",NULL}, // Wertebereich ? Aber HIDDEN egal
     {&confvalues.fcr, -2000, 2000, "0",TYPE_FLOAT_HIDDEN, "fcr", "Kalibrierwert fcr fuer Gyro",NULL},
 
+    // Gyro Ausrichtung in den Achsen -3 ... +3 (ohne 0) - jede verfügbare Achse in beiden Richtungen
     {&confvalues.achse0,  -3, 3, "-2", TYPE_INT_DONT_USE, "achse0",  "Ausrichtung Achse0",NULL},   // erstmal händisch machen, ist sonst zu speziell
     {&confvalues.achse1,  -3, 3, "1",  TYPE_INT_DONT_USE, "achse1",  "Ausrichtung Achse1",NULL},   // ginge auch einfach als INT
     {&confvalues.achse2,  -3, 3, "3",  TYPE_INT_DONT_USE, "achse2",  "Ausrichtung Achse2",NULL},   // 
-    
+
+    // Kompaß - Hidden = wird nur durch SW gesetzt
     {&confvalues.maxX,  -6000, 6000, "2124", TYPE_INT_HIDDEN, "maxX",  "Kalibrierwerte max.Wert X-Achse",NULL},   // Test  2124,1947,2133,1944,
     {&confvalues.minX,  -6000, 6000, "1947", TYPE_INT_HIDDEN, "minX",  "Kalibrierwerte min.Wert X-Achse",NULL},   
     {&confvalues.maxY,  -6000, 6000, "2133", TYPE_INT_HIDDEN, "maxY",  "Kalibrierwerte max.Wert Y-Achse",NULL},   
     {&confvalues.minY,  -6000, 6000, "1944", TYPE_INT_HIDDEN, "minY",  "Kalibrierwerte min.Wert Y-Achse",NULL},   
     {&confvalues.angle2, -360, 360, "0",TYPE_FLOAT, "angle2", "Kompass Drehung um die Z-Achse in Grad",NULL},
 
-    {&confvalues.ssid,       8, 20,  "Wasserwaage", TYPE_STRING, "ssid", "Accesspoint SSID",NULL},          // min Length in der SW testen ?  Fehlermeldungen ? Oder egal, man muß wissen, was man tut ?
-    {&confvalues.password,   8, 20,  "ww00aa11", TYPE_STRING, "password", "Accesspoint password",NULL},  // noch ändern !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    {&confvalues.ssid,       8, 20,  "Wasserwaage", TYPE_STRING, "ssid", "Accesspoint SSID",NULL},       // min Length in der SW testen ?  Fehlermeldungen ? Oder egal, man muß wissen, was man tut ?
+    {&confvalues.password,   8, 20,  "ww00aa11", TYPE_STRING, "password", "Accesspoint password",NULL},  // ändern ?
     {&confvalues.host,       8, 20,  "hostIP",   TYPE_STRING, "host", "host for Client Requests",NULL}
 };
 

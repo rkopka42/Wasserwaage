@@ -270,7 +270,7 @@ void handleRoot()
 // src: https://stackoverflow.com/a/28002292
 const getScript1 = (source, callback) => {
     var script = document.createElement('script');
-    var prior = document.getElementsByTagName('script')[0];
+    var prior  = document.getElementsByTagName('script')[0];
     script.async = 1;
     script.onload = script.onreadystatechange = (_, isAbort) => {
         if (isAbort || !script.readyState || /loaded|complete/.test(script.readyState)) {

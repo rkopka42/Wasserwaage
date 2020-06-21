@@ -2,8 +2,8 @@
  * 
  */
 
-#define VERSION 9002  // Format v.ss.xxx wie in der Firma - keine führende 0!!
-#define VERSIONSTRING "0.09.002"  // automatisch generieren ?
+#define VERSION 9003  // Format v.ss.xxx wie in der Firma - keine führende 0!!
+#define VERSIONSTRING "0.09.003"  // automatisch generieren ?
 
 #define CFGFILE_NAME "/Wasserwaage.cfg"
 #define LOGFILE_NAME "/Wasserwaage.log"
@@ -54,11 +54,11 @@
 #define DREIECK_KANTE 7
 
 // Config defaults
-#define DEF_ANGLE     0   // Grad Drehung des Sensors
-#define DEF_LAENGE  381 // für Test 380   // cm
-#define DEF_BREITE1 184
-#define DEF_BREITE2 202   // ???
-#define WINKEL_ROT 3
+//#define DEF_ANGLE     0   // Grad Drehung des Sensors
+//#define DEF_LAENGE  381 // für Test 380   // cm
+//#define DEF_BREITE1 184   //
+//#define DEF_BREITE2 202   // jetzt in cfg
+#define WINKEL_ROT  3
 #define WINKEL_GELB 1
 
 // Pins
@@ -68,7 +68,7 @@
  #define LICHT   13  // LED, die den Zustand zeigt: Standby, connected... 
 #endif
 #define CAL_KEY 37  // ButtonC
-#define RXD2 16   // Serial2  ESP32  oder SWSerial ?
+#define RXD2 16   // Serial2  ESP32
 #define TXD2 17
 
 // Zeiten für Signal LED
@@ -91,13 +91,6 @@
 #define ST77XX_GREEN GREEN
 #define ST77XX_RED RED
 #define ST77XX_YELLOW YELLOW
-
-// Serial2
-#define SEARCH 0
-#define START 1
-#define SEARCHCMD 2
-#define END 3
-#define READY 4
 
 // Werte für Displays x,y,w,h
 #ifdef USE_M5STACK
