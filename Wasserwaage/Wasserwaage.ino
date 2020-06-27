@@ -28,27 +28,26 @@
 #include "grafics.h"    // my bitmaps
 
 #ifdef USE_M5STACK
-#include <M5Stack.h>
-#include "utility/MPU9250.h"
+ #include <M5Stack.h>
+ #include "utility/MPU9250.h"
 
-MPU9250 IMU;
+ MPU9250 IMU;   // internen Gyro nutzen
 #else
-#include <SparkFun_MMA8452Q.h> // Accelometer library
+ #include <SparkFun_MMA8452Q.h> // Accelometer library
 
 // Begin using the library by creating an instance of the MMA8452Q
 //  class. We'll call it "accel". That's what we'll reference from
 //  here on out.
 // evt. 2 Werte anlegen mit beiden Adressen, dann Test und den funktionierenden über Zeiger ansprechen
-MMA8452Q accel(0x1D);  //(default 0x1D) kann auch 1C sein
+ MMA8452Q accel(0x1D);  //(default 0x1D) kann auch 0x1C sein (I2C)
 
-#ifdef USE_DISPLAY
- #include <Adafruit_GFX.h>    // Core graphics library
- #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
- #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
+ #ifdef USE_DISPLAY   // TFT aber nicht M5Stack
+  #include <Adafruit_GFX.h>    // Core graphics library
+  #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
+  #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 
- Adafruit_ST7735 tft_ = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-
-#endif
+  Adafruit_ST7735 tft_ = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+ #endif
 
 #endif
 
@@ -65,22 +64,20 @@ WebServer server(80); //Server on port 80
 
 #ifdef USE_TEMP
 //Create Instance of HTU21D or SI7021 temp and humidity sensor (and MPL3115A2 barrometric sensor)
-Weather sensor;
+ Weather sensor;
 
-float humidity = 0;
-float tempC = 0;
+ float humidity = 0;
+ float tempC = 0;
 #endif
 
-const int analogInPin = 34; // Spannung ? -> define  ADC1_6
+// ADC
 int sensorValue = 0;        // value read from D+
-
-float  keilhoehe=KEIL_HOEHE;
 
 // für GYRO Berechnungen
 float ff[3]={0,0,0},f[3]={0,0,0};
 float fxrot=0,fyrot=0,fzrot=0;
 float fp=0,fr=0;
-int    print_=0;
+int   print_=0;
 float fp_corr,fr_corr;
 float z1,z2,z3,z4;
 
@@ -95,7 +92,7 @@ bool do_refresh=false;
 bool do_calib=false;  // compass
 int nb; // number of clients
 
-const int led = LED_BUILTIN;
+//const int led = LED_BUILTIN;
 
 #include "cfg.h"
 #include "utils.h"
@@ -128,14 +125,12 @@ void setup(void)
   if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED))
   {
     DSerial.println("SPIFFS Mount Failed");
-//    return;
+//    return; // dann nur default Werte -> evt. irgendwie anzeigen
   }
-
-  //write_test_cfg();
 #endif 
 
   read_defaults(config);
-  read_ini(CFGFILE_NAME , config);
+  read_ini(CFGFILE_NAME , config);  // Ergebnis auswerten ?
 
 #ifdef USE_DISPLAY
   // Start device display with ID of sensor
@@ -150,14 +145,12 @@ void setup(void)
   tft_.println(confvalues.breite1);
   tft_.print(F("Breite2:"));
   tft_.println(confvalues.breite2);
-#endif // LCD
+#endif
 
   WiFi.mode(WIFI_AP);           //Only Access point  
 
   // for ESP32
   WiFi.softAP(confvalues.ssid.c_str(), confvalues.password.c_str());  //Start HOTspot removing password will disable security   Kanal ????
-  // for ESP8266
-  //WiFi.softAP(confvalues.ssid, confvalues.password);  //Start HOTspot removing password will disable security   Kanal ????
 
   IPAddress myIP = WiFi.softAPIP(); //Get IP address
   Serial.print("HotSpot IP:");
@@ -301,6 +294,9 @@ void loop(void)
   
   nb = WiFi.softAPgetStationNum();
 
+// ähnlich auch für Taste für AP/WLAN Umschaltung
+
+#ifdef USE_M5STACK    // auch bei AVR Variante so machen
   if ( !digitalRead(CAL_KEY))
   {
     if (!pressed)  // neuer Druck
@@ -359,6 +355,7 @@ void loop(void)
       calib_changed=false;
     }    
   } 
+#endif
 
 #ifdef USE_DISPLAY
   if (1)
@@ -553,7 +550,8 @@ void loop(void)
         getWeather();
 #endif
 
-        //sensorValue = analogRead(analogInPin);
+        //sensorValue = analogRead(ANALOGINPIN);  // Arduinofunktion
+        // ESP32
         sensorValue = adc1_get_raw(ADC1_CHANNEL_6);  // 14V 2450  18K 3,3K -> 0,155 -> 14V * 0,155  = 2,16V -> 2450 -> 9V bei 273.0 -> 175,5 oder 14V=2450 ~ 
         /*Serial.print(" Ch6=");
         Serial.print(sensorValue);

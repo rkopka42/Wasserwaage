@@ -30,10 +30,7 @@
 #define USE_TEMP      // externer Temperatursensor
 //#define USE_DISPLAY   // evt. später noch Unterscheidung nach TFT von letzter Version oder M5Stack, erstmal ohne M5 den alten Code
 
-#ifndef LED_BUILTIN
- #define LED_BUILTIN 2    // dummy
-#endif
-
+// manche Libs geben tft fix vor. Für unterschiedliche Libs daher immer tft_ im Source und mit #define auf das richtige umsetzen
 #ifdef USE_M5STACK
  #define tft_ M5.lcd
  #ifdef USE_DISPLAY
@@ -41,7 +38,29 @@
  #endif
 #endif
 
-// -> evt. das Ini System vom Wasserstop
+// Pins
+#ifndef LED_BUILTIN
+ #define LED_BUILTIN 2    // dummy
+#endif
+
+//#define RXD2 16   // Serial2  ESP32
+//#define TXD2 17
+#define TASTER 32 // AP/WLAN Umschaltung
+
+#define ANALOGINPIN 34  // Spannung ? -> define  ADC1_6
+// -> D+ ?? aber auch VCC einlesen, D+ dann nur zum Schalten
+
+// externes TFT Display, M5Stack macht das intern
+#define TFT_CS        10
+#define TFT_RST        8 // Or set to -1 and connect to Arduino RESET pin
+#define TFT_DC         9
+
+#ifdef USE_M5STACK
+ #define CAL_KEY 37  // ButtonC M5STACK für Kalibrierung
+ #define LICHT   15  // LED, die den Zustand zeigt: Standby, connected...  GPIO15 für M5Stack ???
+#else
+ #define LICHT   13  // LED, die den Zustand zeigt: Standby, connected...  
+#endif
 
 // Werte, die man konfigurieren könnte, aber nur für Feeling, erstmal nur im Source lassen
 #define KEYTIME_MIN   100   // ms
@@ -56,21 +75,12 @@
 #define HEIGHT_BALKEN_H 160 // Balkenhöhe am Display
 
 #define HEIGHT_OK 3         // unter 3cm wird OK angezeigt
-#define DREIECK_KANTE 7
-
-// Config defaults
-//#define DEF_ANGLE     0   // Grad Drehung des Sensors
-//#define DEF_LAENGE  381 // für Test 380   // cm
-//#define DEF_BREITE1 184   //
-//#define DEF_BREITE2 202   // jetzt in cfg
-#define WINKEL_ROT  3
-#define WINKEL_GELB 1
+#define DREIECK_KANTE 7     // Kantenlänge des Dreiecks bei den Balkenanzeigen in Pixel
+#define WINKEL_ROT  3       // ab dem Winkel in Deg wird das Bild rot angezeigt
+#define WINKEL_GELB 1       // .. gelb
 
 // Pins
-#ifdef USE_M5STACK
- #define LICHT   15  // LED, die den Zustand zeigt: Standby, connected...  GPIO15 für M5Stack ???
-#else
- #define LICHT   13  // LED, die den Zustand zeigt: Standby, connected... 
+#ifndef USE_M5STACK
 
  //#define ST77XX_BLACK BLACK   // ????
  //#define ST77XX_WHITE WHITE
@@ -80,22 +90,11 @@
  
 #endif
 
-#define CAL_KEY 37  // ButtonC
-#define RXD2 16   // Serial2  ESP32
-#define TXD2 17
-#define TASTER 32
-
-#define TFT_CS        10
-#define TFT_RST        8 // Or set to -1 and connect to Arduino RESET pin
-#define TFT_DC         9
-  
 // Zeiten für Signal LED
 #define LED_ON  30    // ms
 #define LED_OFF 2970  
 #define LED_ON_OK  150  // ms
 #define LED_OFF_OK 150  
-
-//#define EEPROM_SIZE 1024
 
 // TFT
 #define GRUEN 0
@@ -169,7 +168,7 @@
    https://github.com/me-no-dev/arduino-esp32fs-plugin */
 #define FORMAT_SPIFFS_IF_FAILED true
 
-// ??????????
+// ??????????  F() ignorieren für ESP
 #if defined(__SAM3X8E__)
     #undef __FlashStringHelper::F(string_literal)
     #define F(string_literal) string_literal

@@ -2,6 +2,8 @@
  * 
  */
 
+float  keilhoehe=KEIL_HOEHE;
+
 String farben[]= {
   "ctx.fillStyle = \"rgb(0,200,0)\";\n",
   "ctx.fillStyle = \"rgb(200,0,0)\";\n",
@@ -466,7 +468,10 @@ void draw_Bitmap_(int16_t x, int16_t y,
   }
 }
 
-         
+/* h und w geben die Maße des Bildes an
+ * x,y den Startpunkt 
+ * faktorw und faktorh geben die Vergrößerung an (wie wäre das mit float ?)
+ */
 void draw_Bitmap_faktor(int16_t x, int16_t y,
             const uint8_t *bitmap, int16_t w, int16_t h, int faktorw, int faktorh,
             bool mirror=false, uint16_t color=ST77XX_WHITE) 
@@ -480,7 +485,7 @@ void draw_Bitmap_faktor(int16_t x, int16_t y,
       if (pgm_read_byte(bitmap + (j/faktorh) * byteWidth + (i/faktorw) / 8) & (128 >> ((i/faktorw) & 7))) 
       {
         if (mirror)
-          tft_.drawPixel(x+w-i-1, y+j, ST77XX_BLACK);
+          tft_.drawPixel(x+w-i-1, y+j, ST77XX_BLACK); // Hintergrund löschen (schwarz)
         else
           tft_.drawPixel(x+i, y+j, ST77XX_BLACK);
       }
