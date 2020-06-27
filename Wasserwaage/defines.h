@@ -22,18 +22,23 @@
 #define DO_DEBUG  // show Debugdata on serial
 
 //#define USE_M5STACK   // nur dann die entsprechenden Sensoren erlauben, bzw. wählen, auch die includes
+
 #define USE_KOMPASS   // externer Kompaßsensor
 #define SHOW_KOMPASS    // nur für die Anzeige
 //#define USE_M5KOMPASS // den vom M5 Modul
+
 #define USE_TEMP      // externer Temperatursensor
 //#define USE_DISPLAY   // evt. später noch Unterscheidung nach TFT von letzter Version oder M5Stack, erstmal ohne M5 den alten Code
+
+#ifndef LED_BUILTIN
+ #define LED_BUILTIN 2    // dummy
+#endif
 
 #ifdef USE_M5STACK
  #define tft_ M5.lcd
  #ifdef USE_DISPLAY
   #define LCD
  #endif
- #define LED_BUILTIN 2    // dummy
 #endif
 
 // -> evt. das Ini System vom Wasserstop
@@ -66,11 +71,24 @@
  #define LICHT   15  // LED, die den Zustand zeigt: Standby, connected...  GPIO15 für M5Stack ???
 #else
  #define LICHT   13  // LED, die den Zustand zeigt: Standby, connected... 
+
+ //#define ST77XX_BLACK BLACK   // ????
+ //#define ST77XX_WHITE WHITE
+
+ #define BLACK ST77XX_BLACK   // für TFT Display nötig
+ #define WHITE ST77XX_WHITE 
+ 
 #endif
+
 #define CAL_KEY 37  // ButtonC
 #define RXD2 16   // Serial2  ESP32
 #define TXD2 17
+#define TASTER 32
 
+#define TFT_CS        10
+#define TFT_RST        8 // Or set to -1 and connect to Arduino RESET pin
+#define TFT_DC         9
+  
 // Zeiten für Signal LED
 #define LED_ON  30    // ms
 #define LED_OFF 2970  

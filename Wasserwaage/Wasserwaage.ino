@@ -4,9 +4,12 @@
  *  0.09.001 24.01.2020 rKop  Canvas in Funktion und als .JS nachgeladen, auch für Kompaß, M5 Kompaß ja, aber komisch
  *  0.09.002 25.01.2020 rKop  CFG umgestellt, Anzeigefehler weg      
  *  0.09.003 11.06.2020 rKop  offenes Github
+ *           27.06.2020 rKop  compiliert auch für externes TFT (kein M5STACK)
  *  
- *        *  -> Spannung und Sleep
- *        
+ *  TODO
+ *  - Spannung und Sleep
+ *  - TFT Grafiken an M5 angepaßt, etwas größer und mehr, evt. aus Vektor errechnet      
+ *  
  *  Höhe 700x480 -> 700(?) x 390 -> paßt für Pumpkin, noch Platz rechts
  */
  
@@ -37,6 +40,16 @@ MPU9250 IMU;
 //  here on out.
 // evt. 2 Werte anlegen mit beiden Adressen, dann Test und den funktionierenden über Zeiger ansprechen
 MMA8452Q accel(0x1D);  //(default 0x1D) kann auch 1C sein
+
+#ifdef USE_DISPLAY
+ #include <Adafruit_GFX.h>    // Core graphics library
+ #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
+ #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
+
+ Adafruit_ST7735 tft_ = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+
+#endif
+
 #endif
 
 #ifdef USE_TEMP
