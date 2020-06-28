@@ -55,11 +55,6 @@
 #include "SparkFun_Si7021_Breakout_Library.h" // Temp und Humidity Sensor
 #endif
 
-//SSID and Password to your ESP Access Point
-// noch ändern auf conf values !!!!!!!!!!
-//const char *ssid = "Wasserwaage";
-//const char* password = "ww00aa11";
-
 WebServer server(80); //Server on port 80
 
 #ifdef USE_TEMP
@@ -86,11 +81,16 @@ int CmaxX=0, CminX=16000, CmaxY=0, CminY=16000;
 
 long last_key=0;    // Zeit in millis
 bool pressed=false;
+long last_keyT=0;    // Zeit in millis
+bool pressedT=false;
+int modeT=MODE_WLAN;
 bool standby=false;
 bool eeprom_ok=false;
-bool do_refresh=false;
+//bool do_refresh=false;
 bool do_calib=false;  // compass
 int nb; // number of clients
+bool Dplus = false;
+time_t last_modeT_change = 0;
 
 //const int led = LED_BUILTIN;
 
@@ -108,19 +108,19 @@ void setup(void)
 #ifdef USE_M5STACK
   M5.begin();
   pinMode(CAL_KEY, INPUT_PULLUP);
+  dacWrite (25,0); // das macht den Lautsprecher leise, nur ein kurzer Knack beim Start
 #endif
 
   Wire.begin();
      
   Serial.begin(115200);
   Serial.println(""); // wegen Boot Messages
-  Serial.println((String("Wasserwaage WLAN ! ") + String(VERSIONSTRING)));
+  Serial.println((String("Wasserwaage - ") + String(VERSIONSTRING)));
 
   pinMode(LICHT, OUTPUT);
   digitalWrite(LICHT, HIGH);
-
-  dacWrite (25,0); // das macht den Lautsprecher leise, nur ein kurzer Knack beim Start
-  
+  pinMode(TASTER, INPUT);
+ 
 #ifdef ESP32
   if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED))
   {
@@ -146,6 +146,9 @@ void setup(void)
   tft_.print(F("Breite2:"));
   tft_.println(confvalues.breite2);
 #endif
+
+// nur bei Bedarf einschalten mit MODE
+// was braucht man für Server ?
 
   WiFi.mode(WIFI_AP);           //Only Access point  
 
@@ -290,12 +293,106 @@ void loop(void)
   static unsigned long next_LED=0;
   static bool last_LED_on=false;
 
+  long        time_T        =millis()-last_keyT; // Zeit gedrückt
+  bool        press_shortT  =false, press_long_activeT=false, press_longT=false;
+  
   server.handleClient();          //Handle client requests
   
   nb = WiFi.softAPgetStationNum();
 
-// ähnlich auch für Taste für AP/WLAN Umschaltung
+// Taste für AP/WLAN Umschaltung
 
+ // DSerial.print(" T=" + String(digitalRead(TASTER))+ " ");
+
+  if ( !digitalRead(TASTER))
+  {
+    if (!pressedT)  // neuer Druck
+    {
+      last_keyT=millis();
+      pressedT=true;
+    }
+    else  // schon länger gedrückt
+    {
+      if (time_T>KEYTIME_LONG)
+      {
+        press_long_activeT=true;
+      }
+    }
+  }
+  else    // not pressed
+  {
+    if (pressedT)  // es war vorher gedrückt
+    {
+      if (time_T>KEYTIME_MIN and time_T<KEYTIME_SHORT)
+        press_shortT=true;
+      else if (time_T>KEYTIME_LONG)
+        press_longT=true;
+    }
+    else  // keine Taste auch vorher
+    {    
+    }
+    pressedT=false;
+  }
+
+  DSerial.print(" modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
+  int modeT_old = modeT;
+  bool is10min =  last_modeT_change + MODETIMEOUT < time(NULL);
+  switch (modeT)
+  {
+    case MODE_NOCLIENT:  //  D+ aber kein Client, WLAN bleibt an
+      if (!Dplus)            modeT = MODE_NODPLUS;
+      if (nb>=0)             modeT = MODE_SLOW; 
+      break;       
+      
+    case MODE_SLOW:      //  D+ und Client
+      if (!Dplus)            modeT = MODE_NODPLUS;
+      else if (nb<=0)        modeT = MODE_NOCLIENT;
+      break;       
+      
+    case MODE_FAST:      //  D+ und Client und Anwahl in der GUI (10min lang, dann SLOW)
+      if (!Dplus)            modeT = MODE_NODPLUS;
+      else if (is10min)      modeT = MODE_SLOW;
+      else if (nb<=0)        modeT = MODE_NOCLIENT;
+      break;       
+      
+    case MODE_NODPLUS:   //  kein D+, aber vorher Client, SLOW, nach 10min in SLEEP 
+      if (Dplus)             modeT = MODE_NOCLIENT;
+      else if (nb<=0)        modeT = MODE_SLEEP;
+      else if (is10min)      modeT = MODE_SLEEP;
+      break;
+             
+    case MODE_WLAN:      //  kein D+, durch Taste (wie geht das mit längerem Sleep ? Zeiten für pressed_long anschauen)  AP ein für 10min oder bis wieder Taste. Dann SLEEP
+      if (Dplus)             modeT = MODE_NOCLIENT;
+      else if (press_shortT) modeT = MODE_SLEEP;
+      else if (is10min)      modeT = MODE_SLEEP;
+      break;       
+      
+    case MODE_SLEEP:     //  länger Sleep, sonst nichts, auf Taste und D+ achten, dann NOCLIENT oder WLAN
+      if (Dplus)             modeT = MODE_NOCLIENT;
+      else if (press_shortT) modeT = MODE_WLAN;
+      break;       
+  
+    default:  
+      DSerial.println("Falscher Modus : " + String(modeT));
+      modeT = MODE_SLEEP;
+      break;       
+  }
+  if (modeT != modeT_old)
+  {
+    last_modeT_change = time(NULL);
+    //je nach Mode WLAN an aus
+    if (modeT==MODE_SLEEP)
+    {
+        // AP aus
+    }
+    else if (modeT_old==MODE_SLEEP)
+    {
+        // AP an
+    }
+  }
+    
+  DSerial.print(" (2) modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
+  
 #ifdef USE_M5STACK    // auch bei AVR Variante so machen
   if ( !digitalRead(CAL_KEY))
   {
@@ -553,6 +650,11 @@ void loop(void)
         //sensorValue = analogRead(ANALOGINPIN);  // Arduinofunktion
         // ESP32
         sensorValue = adc1_get_raw(ADC1_CHANNEL_6);  // 14V 2450  18K 3,3K -> 0,155 -> 14V * 0,155  = 2,16V -> 2450 -> 9V bei 273.0 -> 175,5 oder 14V=2450 ~ 
+        if (sensorValue/175.5 > 10)
+          Dplus = true;
+        else 
+          Dplus = false;
+        
         /*Serial.print(" Ch6=");
         Serial.print(sensorValue);
         Serial.print("  ");
@@ -567,7 +669,7 @@ void loop(void)
     }   
   } // standby      
 
-  if (nb<=0)
+  if (nb<=0)  // Number of clients
   {
      // LED just for standby - no clients 
     if (next_LED < millis())
@@ -586,7 +688,7 @@ void loop(void)
     }
   }
   else if ( z1<= HEIGHT_OK and z2<= HEIGHT_OK and z3<= HEIGHT_OK and z4<= HEIGHT_OK )
-  { // OK -> schnell blinken
+  {   // OK -> schnell blinken
     if (next_LED < millis())
     {
       if (last_LED_on)
@@ -602,9 +704,27 @@ void loop(void)
       last_LED_on = !last_LED_on;     
     }
   }
-  else
+  else    // normaler Betrieb
   {
     digitalWrite(LICHT, HIGH);
   }  
- 
+
+  if (modeT == MODE_SLEEP)
+  {
+    // Sleep für 500ms(?)
+#ifdef DO_SLEEP
+      int sleep_time_in_ms = 500;
+      
+      if (1)
+      {     
+        esp_sleep_enable_timer_wakeup(sleep_time_in_ms * 1000); //0.1 seconds scheint auch nicht mehr Strom zu brauchen, reagiert aber besser;
+        int ret = esp_light_sleep_start();
+    
+        DSerial.print(" S ");   
+      }
+      else
+        flag_nosleep=false;
+        
+#endif        
+  }
 }

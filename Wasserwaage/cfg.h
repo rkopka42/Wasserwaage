@@ -84,7 +84,7 @@ conf_t config[] =
 
     {&confvalues.ssid,       8, 20,  "Wasserwaage", TYPE_STRING, "ssid", "Accesspoint SSID",NULL},       // min Length in der SW testen ?  Fehlermeldungen ? Oder egal, man muß wissen, was man tut ?
     {&confvalues.password,   8, 20,  "ww00aa11", TYPE_STRING, "password", "Accesspoint password",NULL},  // ändern ?
-    {&confvalues.host,       8, 20,  "hostIP",   TYPE_STRING, "host", "host for Client Requests",NULL}
+    {&confvalues.host,       8, 20,  "hostIP",   TYPE_STRING, "host", "host for Client Requests",NULL}  // noch nicht benutzt
 };
 
 // vordere Spaces überspringen, bei /n oder # abbrechen

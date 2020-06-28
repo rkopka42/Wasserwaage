@@ -18,7 +18,7 @@
 // ? define für Serial.print ...   Makros mit . gehen nicht (?)
 #define DSerial  if (DSERIAL) Serial
 
-#define DO_SLEEP  // use Sleeping mode
+//#define DO_SLEEP  // Prozessor Sleep durchführen
 #define DO_DEBUG  // show Debugdata on serial
 
 //#define USE_M5STACK   // nur dann die entsprechenden Sensoren erlauben, bzw. wählen, auch die includes
@@ -61,6 +61,15 @@
 #else
  #define LICHT   13  // LED, die den Zustand zeigt: Standby, connected...  
 #endif
+
+#define MODE_NOCLIENT 1 //  D+ aber kein Client, WLAN bleibt an
+#define MODE_SLOW     2 //  D+ und Client
+#define MODE_FAST     3 //  D+ und Client und Anwahl in der GUI (10min lang, dann SLOW)
+#define MODE_NODPLUS  4 //  kein D+, aber vorher Client, SLOW, nach 10min in SLEEP 
+#define MODE_WLAN     5 //  kein D+, durch Taste (wie geht das mit längerem Sleep ? Zeiten für pressed_long anschauen)  AP ein für 10min oder bis wieder Taste. Dann SLEEP
+#define MODE_SLEEP    0 //  länger Sleep, sonst nichts, auf Taste und D+ achten, dann NOCLIENT oder WLAN
+
+#define MODETIMEOUT 600 // sek bis ein Mode Wechsel auftritt
 
 // Werte, die man konfigurieren könnte, aber nur für Feeling, erstmal nur im Source lassen
 #define KEYTIME_MIN   100   // ms

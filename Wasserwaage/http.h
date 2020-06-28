@@ -220,10 +220,18 @@ void handleRoot()
    
   String cont = server.arg("Fast");
   // Button Wert verwenden
-  if (cont == "Fast")
-    do_refresh=true;
-  else
-    do_refresh=false;
+  if (cont == "Fast" and /*not do_refresh*/  modeT != MODE_FAST)
+  {
+    //do_refresh=true;
+    modeT = MODE_FAST;
+    last_modeT_change = time(NULL);
+  }
+  else if (/*cont == "Slow" and do_refresh*/  modeT == MODE_FAST)
+  {
+    //do_refresh=false;
+    modeT = MODE_SLOW;
+    last_modeT_change = time(NULL);
+  }
   
   String message1 =R"=====(
   <html> 
@@ -243,7 +251,7 @@ void handleRoot()
   String button_text;
   String value_text;
   
-  if (do_refresh)
+  if (/*do_refresh and */ modeT == MODE_FAST)
     button_text = "<input class=\"button\" type=\"submit\" name=\"Slow\" value=\"Slow\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
   else  
     button_text = "<input class=\"button\" type=\"submit\" name=\"Fast\" value=\"Fast\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
@@ -290,7 +298,7 @@ getScript1(url, function(){ paintmain();});
 }
   )====="; 
 
-  if (do_refresh)
+  if (/*do_refresh*/ modeT == MODE_FAST)
     message2+="setInterval(loadJS,1000);\n";
   else
     message2+="setInterval(loadJS,5000);\n";
@@ -347,10 +355,18 @@ void handleCompass()
   
   String cont = server.arg("Reload");
   // Button Wert verwenden
-  if (cont == "Fast" and not do_refresh)
-    do_refresh=true;
-  else if (cont == "Slow" and do_refresh)
-    do_refresh=false;
+  if (cont == "Fast" and /*do_refresh*/ modeT != MODE_FAST)
+  {
+   // do_refresh=true;
+    modeT = MODE_FAST;
+    last_modeT_change = time(NULL);
+  }
+  else if (cont == "Slow" and /*do_refresh*/ modeT == MODE_FAST)
+  {
+    //do_refresh=false;
+    modeT = MODE_SLOW;
+    last_modeT_change = time(NULL);
+  }
     
   String calib = server.arg("Calib");
   // Button Wert verwenden
@@ -362,13 +378,15 @@ void handleCompass()
     // bool is_calib   if not do_calib -> Button ändern, Startwerte  do_calib=true
     // irgendwas um beim ersten Mal die Werte auf Min Max zu setzen
     do_calib  =true;
-    do_refresh=true;
+    //do_refresh=true;
+    modeT = MODE_FAST;
     CmaxX=0; CminX=16000; CmaxY=0; CminY=16000;
   }
   else if (calib == "SaveCalib" and do_calib)
   {
     do_calib  =false;
-    do_refresh=false;
+    //do_refresh=false;
+    modeT = MODE_SLOW;
     // save calib Werte - oder noch eine Box wie bei config !?
 
     Serial.println("config");
@@ -390,7 +408,8 @@ void handleCompass()
   else if (calib == "AbortCalib" and do_calib)
   {
     do_calib  =false;
-    do_refresh=false;
+    //do_refresh=false;
+    modeT = MODE_SLOW;
   }
   
   if (do_calib)
@@ -419,7 +438,7 @@ void handleCompass()
 
   String button_text;
  
-  if (do_refresh)
+  if (/*do_refresh and modeT ==*/ modeT == MODE_FAST)
     button_text = "<input class=\"button\" type=\"submit\" name=\"Reload\" value=\"Slow\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\"> ";
   else  
     button_text = "<input class=\"button\" type=\"submit\" name=\"Reload\" value=\"Fast\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\"> ";
@@ -472,7 +491,7 @@ getScript1(url, function(){ paintcompass();});
 }
   )====="; 
 
-  if (do_refresh)
+  if (/*do_refresh*/ modeT == MODE_FAST)
     message2+="setInterval(loadJS,1000);\n";
   else
     message2+="setInterval(loadJS,5000);\n";
