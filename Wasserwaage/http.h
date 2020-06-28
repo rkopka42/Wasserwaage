@@ -13,7 +13,7 @@ void handleCalib()
   if (calib == "Calib")
   {
     // do calib   
-    Serial.println("calib");
+    DSerial.println("calib");
     confvalues.fcp=fp;  confvalues.fcr=fr;    
     do_calib=true;
     calib_changed=true; // war für getrenntes oder späteres Schreiben erst nach Loslassen der Taste
@@ -54,7 +54,7 @@ void handleCalib()
 
   message.replace("STELLVERTRETER", werte);
   server.send(200, "text/html", message);
-  Serial.println("Root 200");
+  DSerial.println("Root 200");
   
   delay(200);
   digitalWrite(LICHT, HIGH);
@@ -94,7 +94,7 @@ void handleConfig()
   // Button Wert verwenden
   if (config_ == "Save")
   {
-    Serial.println("config");
+    DSerial.println("config");
 
     is_save=getvaluesFromParams_(); // sync server version
 
@@ -196,7 +196,7 @@ void handleConfig()
   message.replace("CONFIGVALUES_", output);
   
   server.send(200, "text/html", message);
-  Serial.println("Root 200");
+  DSerial.println("Root 200");
   
   delay(200);
   digitalWrite(LICHT, HIGH);
@@ -220,13 +220,13 @@ void handleRoot()
    
   String cont = server.arg("Fast");
   // Button Wert verwenden
-  if (cont == "Fast" and /*not do_refresh*/  modeT != MODE_FAST)
+  if (cont == "Fast" and /*not do_refresh*/  modeT != MODE_FAST)  // ohne DPLUS ein Umweg, der aber dann zum richtigen Mode führt
   {
     //do_refresh=true;
     modeT = MODE_FAST;
     last_modeT_change = time(NULL);
   }
-  else if (/*cont == "Slow" and do_refresh*/  modeT == MODE_FAST)
+  else if (cont == "Slow" and /*do_refresh*/  modeT == MODE_FAST)
   {
     //do_refresh=false;
     modeT = MODE_SLOW;
@@ -308,21 +308,19 @@ getScript1(url, function(){ paintmain();});
 
   server.send(200, "text/html", message1 + button_text + value_text +   message2 + message4 + end_text);
 
-  #ifdef SEROUT     
-          Serial.println("Root 200");
-          Serial.print("fp_corr=");
-          Serial.print(fp_corr);
-          Serial.print(" fr_corr=");
-          Serial.print(fr_corr);
-          Serial.print(" z1=");
-          Serial.print(z1);
-          Serial.print(" z2=");
-          Serial.print(z2);
-          Serial.print(" z3=");
-          Serial.print(z3);
-          Serial.print(" z4=");
-          Serial.println(z4);
-  #endif
+          DSerial.println("Root 200");
+          DSerial.print("fp_corr=");
+          DSerial.print(fp_corr);
+          DSerial.print(" fr_corr=");
+          DSerial.print(fr_corr);
+          DSerial.print(" z1=");
+          DSerial.print(z1);
+          DSerial.print(" z2=");
+          DSerial.print(z2);
+          DSerial.print(" z3=");
+          DSerial.print(z3);
+          DSerial.print(" z4=");
+          DSerial.println(z4);
   
   delay(100);
   digitalWrite(LICHT, HIGH);
@@ -370,9 +368,9 @@ void handleCompass()
     
   String calib = server.arg("Calib");
   // Button Wert verwenden
-  //Serial.print(calib);
-  //Serial.print(" - ");
-  //Serial.println(do_calib);
+  //DSerial.print(calib);
+  //DSerial.print(" - ");
+  //DSerial.println(do_calib);
   if (calib == "Calib" and not do_calib)
   {
     // bool is_calib   if not do_calib -> Button ändern, Startwerte  do_calib=true
@@ -389,7 +387,7 @@ void handleCompass()
     modeT = MODE_SLOW;
     // save calib Werte - oder noch eine Box wie bei config !?
 
-    Serial.println("config");
+    DSerial.println("config");
     confvalues.maxX=CmaxX; confvalues.minX=CminX; confvalues.maxY=CmaxY; confvalues.minY=CminY;
 
     // veränderte Werte checken ? Aber das macht das EEPROM Schreiben normalerweise selber
@@ -500,23 +498,20 @@ getScript1(url, function(){ paintcompass();});
   String end_text ="</body>\n </html>";                    
 
   server.send(200, "text/html", message1 + button_text + value_text + message2 + message4 + end_text);
-
-  #ifdef SEROUT     
-          Serial.println("Root 200");
-          Serial.print("fp_corr=");
-          Serial.print(fp_corr);
-          Serial.print(" fr_corr=");
-          Serial.print(fr_corr);
-          Serial.print(" z1=");
-          Serial.print(z1);
-          Serial.print(" z2=");
-          Serial.print(z2);
-          Serial.print(" z3=");
-          Serial.print(z3);
-          Serial.print(" z4=");
-          Serial.println(z4);
-  #endif
-  
+    
+          DSerial.println("Root 200");
+          DSerial.print("fp_corr=");
+          DSerial.print(fp_corr);
+          DSerial.print(" fr_corr=");
+          DSerial.print(fr_corr);
+          DSerial.print(" z1=");
+          DSerial.print(z1);
+          DSerial.print(" z2=");
+          DSerial.print(z2);
+          DSerial.print(" z3=");
+          DSerial.print(z3);
+          DSerial.print(" z4=");
+          DSerial.println(z4);
 
   delay(100);
   digitalWrite(LICHT, HIGH);

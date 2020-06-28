@@ -68,6 +68,7 @@
 #define MODE_NODPLUS  4 //  kein D+, aber vorher Client, SLOW, nach 10min in SLEEP 
 #define MODE_WLAN     5 //  kein D+, durch Taste (wie geht das mit längerem Sleep ? Zeiten für pressed_long anschauen)  AP ein für 10min oder bis wieder Taste. Dann SLEEP
 #define MODE_SLEEP    0 //  länger Sleep, sonst nichts, auf Taste und D+ achten, dann NOCLIENT oder WLAN
+#define MODE_NODPLUSFAST  6 //  kein D+, aber vorher Client (FAST), SLOW, nach 10min in SLEEP 
 
 #define MODETIMEOUT 600 // sek bis ein Mode Wechsel auftritt
 

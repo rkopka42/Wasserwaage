@@ -2,7 +2,7 @@
  * 
  */
 
-float  keilhoehe=KEIL_HOEHE;
+static float  keilhoehe=KEIL_HOEHE;
 
 String farben[]= {
   "ctx.fillStyle = \"rgb(0,200,0)\";\n",
@@ -52,7 +52,7 @@ String get_angle(float value)
   
   s += String(abs(value), (abs(value) >=10? 0:1) );
   if (abs(value) >=10)  s += " ";
-  Serial.println(s);
+  DSerial.println(s);
   return s;
 }       
 
@@ -111,7 +111,7 @@ void draw_value_v3(int xpos,int ypos, float value, float max_value, int max_heig
     s+= String(ypos+max_height-hoehe) + ", ";
     s+= String(breite) + ", ";
     s+= String(hoehe) + "); \n";
-    //Serial.println(s);
+    //DSerial.println(s);
 }
 
 // Ein Punkt einer gefüllten (oder hohlen) Struktur
@@ -160,7 +160,7 @@ void draw_pic(String &s, xy *form, int punkte, int x, int y, float angle=0, floa
 
  for (n=1; n<punkte; n++)
  {
-    //Serial.print("N="+String(n)+ " ");
+    //DSerial.print("N="+String(n)+ " ");
     nextx = lastx + form[n].x*factor * cos(angle*PI/180) - form[n].y*factor * sin(angle*PI/180);
     nexty = lasty + form[n].x*factor * sin(angle*PI/180) + form[n].y*factor * cos(angle*PI/180);
 
@@ -178,8 +178,8 @@ void draw_pic(String &s, xy *form, int punkte, int x, int y, float angle=0, floa
 void dumpClients()
 {
   int nb = WiFi.softAPgetStationNum();
-  Serial.print("Stations connected = ");
-  Serial.println(WiFi.softAPgetStationNum());
+  DSerial.print("Stations connected = ");
+  DSerial.println(WiFi.softAPgetStationNum());
 }
 */
 
@@ -201,10 +201,10 @@ int get_compass()
   char n; 
 
 #ifdef USE_M5KOMPASS
-  Serial.print(" Comp: ");
-  Serial.print(comp_x);
-  Serial.print(", ");
-  Serial.println(comp_y); 
+  DSerial.print(" Comp: ");
+  DSerial.print(comp_x);
+  DSerial.print(", ");
+  DSerial.println(comp_y); 
 // done outside
 #else
 // falls niemand Werte liefert
@@ -231,15 +231,15 @@ int get_compass()
   n =Wire.write(byte(0x01)); 
   if (n != 1)
   {
-    Serial.print("n wrong ");
-    Serial.print(n);
+    DSerial.print("n wrong ");
+    DSerial.print(n);
     return -1;
   }
   n = Wire.endTransmission(false); // hold the I2C-bus
   if (! ((n == 0) || (n ==7)) )
   {
-    Serial.print("n2 wrong ");
-    Serial.print(n);
+    DSerial.print("n2 wrong ");
+    DSerial.print(n);
     return -2;
   }    
 
@@ -247,17 +247,17 @@ int get_compass()
   n=20;   // Timeout  20*20 = 400ms
   while (Wire.available()<4 and n-- >0)        // Timeout !!!!!!!!!!!!!!!!!!!
   {
-    //Serial.print(Wire.available()); 
-    //Serial.print(" ");
+    //DSerial.print(Wire.available()); 
+    //DSerial.print(" ");
     delay(20);
   }
   if (n<=0)  
   {
-    Serial.print("n3 wrong ");
-    Serial.print(n);    
+    DSerial.print("n3 wrong ");
+    DSerial.print(n);    
     return -3;
   }
-  Serial.print(n);    
+  DSerial.print(n);    
   
   MsbX  =Wire.read();          // obere  4 Bit X 
   LsbX  =Wire.read();          // untere 8 Bit X 
@@ -269,16 +269,16 @@ int get_compass()
   comp_y=((MsbY&0x0f)*256)+(LsbY); 
 #endif
   /*
-  Serial.print(x);
-  Serial.print(", ");
-  Serial.print(y);
-  Serial.print(",  (" + String(confvalues.minX) + "," + String(confvalues.maxX) + "," + String(confvalues.minY) + "," + String(confvalues.maxY) +  ")  -> ");
+  DSerial.print(x);
+  DSerial.print(", ");
+  DSerial.print(y);
+  DSerial.print(",  (" + String(confvalues.minX) + "," + String(confvalues.maxX) + "," + String(confvalues.minY) + "," + String(confvalues.maxY) +  ")  -> ");
   x = map(comp_x, confvalues.minX, confvalues.maxX, -180, 180); 
   y = map(comp_y, confvalues.minY, confvalues.maxY, -180, 180); 
-  Serial.print(x);
-  Serial.print(", ");
-  Serial.print(y);
-  Serial.print(",  --> ");
+  DSerial.print(x);
+  DSerial.print(", ");
+  DSerial.print(y);
+  DSerial.print(",  --> ");
   */
   //x = map(x, 1900, 2188, -180, 180); 
   //y = map(y, 1910, 2193, -180, 180); 
@@ -289,8 +289,8 @@ int get_compass()
     mygrad = mygrad +360;
   if (mygrad > 360)    
     mygrad = mygrad -360;
-  Serial.print(mygrad);
-  Serial.println("  Grad"); 
+  DSerial.print(mygrad);
+  DSerial.println("  Grad"); 
   
   return 0;
 }
@@ -669,7 +669,7 @@ void paint_main(String &message)
   message += "ctx.fillText(\"Pitch:" + String(int(fp_corr*10)/10.0, 1)+ "\",200 ,140 );\n";  
   message += "ctx.fillText(\"Roll:" + String(int( (fr_corr <-180 ? -1*(360+fr_corr) :-fr_corr) *10)/10.0, 1)+ "\",405 ,140 );\n";  
   //if (fr_corr <-180)
-    //Serial.print(-1*(360+fr_corr));
+    //DSerial.print(-1*(360+fr_corr));
 
   String bild;
   int farbe = GRUEN;

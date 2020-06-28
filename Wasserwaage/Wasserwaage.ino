@@ -1,13 +1,14 @@
-/*  Wasserwaage Copyright Reinhard Kopka
+/*  Wasserwaage Copyright by Reinhard Kopka
  *  
  *           18.01.2020 rKop  M5Stack, Sensor geht, Display (von TFT Version) integriert
  *  0.09.001 24.01.2020 rKop  Canvas in Funktion und als .JS nachgeladen, auch für Kompaß, M5 Kompaß ja, aber komisch
  *  0.09.002 25.01.2020 rKop  CFG umgestellt, Anzeigefehler weg      
  *  0.09.003 11.06.2020 rKop  offenes Github
  *           27.06.2020 rKop  compiliert auch für externes TFT (kein M5STACK)
- *  
+ *           28.06.2020 rKop  MODE eingeführt - Spannung und Sleep
+ *           
  *  TODO
- *  - Spannung und Sleep
+ *  
  *  - TFT Grafiken an M5 angepaßt, etwas größer und mehr, evt. aus Vektor errechnet      
  *  
  *  Höhe 700x480 -> 700(?) x 390 -> paßt für Pumpkin, noch Platz rechts
@@ -15,9 +16,10 @@
  
 #include <math.h> // Sinus...
 #include <Wire.h> // Must include Wire library for I2C
+
 #include <driver/adc.h>
-#include "FS.h"
 #include "esp_system.h"
+#include "FS.h"
 #include "SPIFFS.h"
 
 #include <WiFi.h>
@@ -31,7 +33,7 @@
  #include <M5Stack.h>
  #include "utility/MPU9250.h"
 
- MPU9250 IMU;   // internen Gyro nutzen
+ MPU9250 IMU;   // internen Gyro nutzen, dazu noch andere Sensoren
 #else
  #include <SparkFun_MMA8452Q.h> // Accelometer library
 
@@ -51,13 +53,11 @@
 
 #endif
 
-#ifdef USE_TEMP
-#include "SparkFun_Si7021_Breakout_Library.h" // Temp und Humidity Sensor
-#endif
-
 WebServer server(80); //Server on port 80
 
 #ifdef USE_TEMP
+ #include "SparkFun_Si7021_Breakout_Library.h" // Temp und Humidity Sensor
+
 //Create Instance of HTU21D or SI7021 temp and humidity sensor (and MPL3115A2 barrometric sensor)
  Weather sensor;
 
@@ -91,9 +91,9 @@ bool do_calib=false;  // compass
 int nb; // number of clients
 bool Dplus = false;
 time_t last_modeT_change = 0;
+bool spiffs_fail = false;
 
-//const int led = LED_BUILTIN;
-
+// Unterfunktionen
 #include "cfg.h"
 #include "utils.h"
 #include "http.h"
@@ -113,9 +113,9 @@ void setup(void)
 
   Wire.begin();
      
-  Serial.begin(115200);
-  Serial.println(""); // wegen Boot Messages
-  Serial.println((String("Wasserwaage - ") + String(VERSIONSTRING)));
+  DSerial.begin(115200);
+  DSerial.println(""); // wegen Boot Messages
+  DSerial.println((String("Wasserwaage - ") + String(VERSIONSTRING)));
 
   pinMode(LICHT, OUTPUT);
   digitalWrite(LICHT, HIGH);
@@ -125,6 +125,7 @@ void setup(void)
   if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED))
   {
     DSerial.println("SPIFFS Mount Failed");
+    spiffs_fail = true;
 //    return; // dann nur default Werte -> evt. irgendwie anzeigen
   }
 #endif 
@@ -156,14 +157,14 @@ void setup(void)
   WiFi.softAP(confvalues.ssid.c_str(), confvalues.password.c_str());  //Start HOTspot removing password will disable security   Kanal ????
 
   IPAddress myIP = WiFi.softAPIP(); //Get IP address
-  Serial.print("HotSpot IP:");
-  Serial.println(myIP);
+  DSerial.print("HotSpot IP:");
+  DSerial.println(myIP);
 
-  Serial.print("ssid:");
-  Serial.print(confvalues.ssid);
-  Serial.print("  Passwd:");
-  Serial.print(confvalues.password);
-  Serial.println("<");
+  DSerial.print("ssid:");
+  DSerial.print(confvalues.ssid);
+  DSerial.print("  Passwd:");
+  DSerial.print(confvalues.password);
+  DSerial.println("<");
   
   server.on("/", handleRoot);        
   server.on("/calib.html", handleCalib);
@@ -176,7 +177,7 @@ void setup(void)
 #endif  
   
   server.begin();                  //Start server
-  Serial.println("HTTP server started");
+  DSerial.println("HTTP server started");
 
 #ifndef USE_M5STACK
   // Choose your adventure! There are a few options when it comes
@@ -197,31 +198,31 @@ void setup(void)
   //     Sets to 800, 400, 200, 100, 50, 12.5, 6.25, or 1.56 Hz.
   //accel.init(SCALE_8G, ODR_6);
 
-  Serial.println("Accel init finished (8452)");
+  DSerial.println("Accel init finished (8452)");
 #else
 // Read the WHO_AM_I register, this is a good test of communication
   byte c = IMU.readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);
-  Serial.print("MPU9250 "); Serial.print("I AM "); Serial.print(c, HEX);
-  Serial.print(" I should be "); Serial.println(0x71, HEX);
+  DSerial.print("MPU9250 "); DSerial.print("I AM "); DSerial.print(c, HEX);
+  DSerial.print(" I should be "); DSerial.println(0x71, HEX);
 
   // if (c == 0x71) // WHO_AM_I should always be 0x68
   {
-    Serial.println("MPU9250 is online...");
+    DSerial.println("MPU9250 is online...");
 
     // Start by performing self test and reporting values
     IMU.MPU9250SelfTest(IMU.SelfTest);
-    Serial.print("x-axis self test: acceleration trim within : ");
-    Serial.print(IMU.SelfTest[0],1); Serial.println("% of factory value");
-    Serial.print("y-axis self test: acceleration trim within : ");
-    Serial.print(IMU.SelfTest[1],1); Serial.println("% of factory value");
-    Serial.print("z-axis self test: acceleration trim within : ");
-    Serial.print(IMU.SelfTest[2],1); Serial.println("% of factory value");
-    Serial.print("x-axis self test: gyration trim within : ");
-    Serial.print(IMU.SelfTest[3],1); Serial.println("% of factory value");
-    Serial.print("y-axis self test: gyration trim within : ");
-    Serial.print(IMU.SelfTest[4],1); Serial.println("% of factory value");
-    Serial.print("z-axis self test: gyration trim within : ");
-    Serial.print(IMU.SelfTest[5],1); Serial.println("% of factory value");
+    DSerial.print("x-axis self test: acceleration trim within : ");
+    DSerial.print(IMU.SelfTest[0],1); DSerial.println("% of factory value");
+    DSerial.print("y-axis self test: acceleration trim within : ");
+    DSerial.print(IMU.SelfTest[1],1); DSerial.println("% of factory value");
+    DSerial.print("z-axis self test: acceleration trim within : ");
+    DSerial.print(IMU.SelfTest[2],1); DSerial.println("% of factory value");
+    DSerial.print("x-axis self test: gyration trim within : ");
+    DSerial.print(IMU.SelfTest[3],1); DSerial.println("% of factory value");
+    DSerial.print("y-axis self test: gyration trim within : ");
+    DSerial.print(IMU.SelfTest[4],1); DSerial.println("% of factory value");
+    DSerial.print("z-axis self test: gyration trim within : ");
+    DSerial.print(IMU.SelfTest[5],1); DSerial.println("% of factory value");
 
     // Calibrate gyro and accelerometers, load biases in bias registers
     IMU.calibrateMPU9250(IMU.gyroBias, IMU.accelBias);
@@ -229,37 +230,37 @@ void setup(void)
     IMU.initMPU9250();
     // Initialize device for active mode read of acclerometer, gyroscope, and
     // temperature
-    Serial.println("MPU9250 initialized for active data mode....");
+    DSerial.println("MPU9250 initialized for active data mode....");
 
 #ifdef USE_M5KOMPASS
 
     // Read the WHO_AM_I register of the magnetometer, this is a good test of
     // communication
     byte d = IMU.readByte(AK8963_ADDRESS, WHO_AM_I_AK8963);
-    Serial.print("AK8963 "); Serial.print("I AM "); Serial.print(d, HEX);
-    Serial.print(" I should be "); Serial.println(0x48, HEX);
+    DSerial.print("AK8963 "); DSerial.print("I AM "); DSerial.print(d, HEX);
+    DSerial.print(" I should be "); DSerial.println(0x48, HEX);
 
     // Get magnetometer calibration from AK8963 ROM
     IMU.initAK8963(IMU.magCalibration);
     // Initialize device for active mode read of magnetometer
-    Serial.println("AK8963 initialized for active data mode....");
-    if (Serial)
+    DSerial.println("AK8963 initialized for active data mode....");
+    //if (Serial)
     {
       //  Serial.println("Calibration values: ");
-      Serial.print("X-Axis sensitivity adjustment value ");
-      Serial.println(IMU.magCalibration[0], 2);
-      Serial.print("Y-Axis sensitivity adjustment value ");
-      Serial.println(IMU.magCalibration[1], 2);
-      Serial.print("Z-Axis sensitivity adjustment value ");
-      Serial.println(IMU.magCalibration[2], 2);
+      DSerial.print("X-Axis sensitivity adjustment value ");
+      DSerial.println(IMU.magCalibration[0], 2);
+      DSerial.print("Y-Axis sensitivity adjustment value ");
+      DSerial.println(IMU.magCalibration[1], 2);
+      DSerial.print("Z-Axis sensitivity adjustment value ");
+      DSerial.println(IMU.magCalibration[2], 2);
     }
 #endif
 
   } // if (c == 0x71)
   // else
   // {
-  //   Serial.print("Could not connect to MPU9250: 0x");
-  //   Serial.println(c, HEX);
+  //   DSerial.print("Could not connect to MPU9250: 0x");
+  //   DSerial.println(c, HEX);
   //   while(1) ; // Loop forever if communication doesn't happen
   // }  
 #endif
@@ -339,9 +340,9 @@ void loop(void)
   bool is10min =  last_modeT_change + MODETIMEOUT < time(NULL);
   switch (modeT)
   {
-    case MODE_NOCLIENT:  //  D+ aber kein Client, WLAN bleibt an
+    case MODE_NOCLIENT:  //  D+ aber kein Client, WLAN bleibt an, Berechnungen nicht nötig, außer Spannung...
       if (!Dplus)            modeT = MODE_NODPLUS;
-      if (nb>=0)             modeT = MODE_SLOW; 
+      else if (nb>=0)        modeT = MODE_SLOW; 
       break;       
       
     case MODE_SLOW:      //  D+ und Client
@@ -350,24 +351,32 @@ void loop(void)
       break;       
       
     case MODE_FAST:      //  D+ und Client und Anwahl in der GUI (10min lang, dann SLOW)
-      if (!Dplus)            modeT = MODE_NODPLUS;
+      if (!Dplus)            modeT = MODE_NODPLUSFAST;
       else if (is10min)      modeT = MODE_SLOW;
       else if (nb<=0)        modeT = MODE_NOCLIENT;
       break;       
       
-    case MODE_NODPLUS:   //  kein D+, aber vorher Client, SLOW, nach 10min in SLEEP 
-      if (Dplus)             modeT = MODE_NOCLIENT;
-      else if (nb<=0)        modeT = MODE_SLEEP;
-      else if (is10min)      modeT = MODE_SLEEP;
+    case MODE_NODPLUS:   //  kein D+, SLOW ?, nach 10min in SLEEP 
+      if      (Dplus and nb<=0) modeT = MODE_NOCLIENT;
+      else if (Dplus and nb>0 ) modeT = MODE_SLOW;
+      else if (nb<=0)           modeT = MODE_SLEEP;
+      else if (is10min)         modeT = MODE_SLEEP;
       break;
-             
+
+    case MODE_NODPLUSFAST:   //  kein D+, aber vorher Client(FAST), SLOW, nach 10min in SLEEP 
+      if      (Dplus and nb<=0) modeT = MODE_NOCLIENT;
+      else if (Dplus and nb>0 ) modeT = MODE_FAST;
+      else if (nb<=0)           modeT = MODE_SLEEP;  // ohne Client kann man gleich in SLEEP
+      else if (is10min)         modeT = MODE_SLEEP;
+      break;
+
     case MODE_WLAN:      //  kein D+, durch Taste (wie geht das mit längerem Sleep ? Zeiten für pressed_long anschauen)  AP ein für 10min oder bis wieder Taste. Dann SLEEP
       if (Dplus)             modeT = MODE_NOCLIENT;
       else if (press_shortT) modeT = MODE_SLEEP;
       else if (is10min)      modeT = MODE_SLEEP;
       break;       
       
-    case MODE_SLEEP:     //  länger Sleep, sonst nichts, auf Taste und D+ achten, dann NOCLIENT oder WLAN
+    case MODE_SLEEP:     //  längerer Sleep, sonst nichts, auf Taste und D+ achten, dann NOCLIENT oder WLAN
       if (Dplus)             modeT = MODE_NOCLIENT;
       else if (press_shortT) modeT = MODE_WLAN;
       break;       
@@ -431,7 +440,7 @@ void loop(void)
   
   if (press_long_active)    // anders, bei Erreichen Flag setzen, das bearbeitet wird und dann gesperrt bis !pressed
   {
-    Serial.println("calib");
+    DSerial.println("calib");
     confvalues.fcp=fp;  confvalues.fcr=fr;    
     do_calib=true;
     // Flag und dann EEPROM schreiben
@@ -517,9 +526,9 @@ void loop(void)
   comp_y=IMU.magCount[1]; 
   /*
        // Print mag values in degree/sec
-        Serial.print(" X-mag field: "); Serial.print(IMU.magCount[0]);
-        Serial.print(" Y-mag field: "); Serial.print(IMU.magCount[1]);
-        Serial.print(" Z-mag field: "); Serial.print(IMU.magCount[2]);
+        DSerial.print(" X-mag field: "); DSerial.print(IMU.magCount[0]);
+        DSerial.print(" Y-mag field: "); DSerial.print(IMU.magCount[1]);
+        DSerial.print(" Z-mag field: "); DSerial.print(IMU.magCount[2]);
     */    
     // Calculate the magnetometer values in milliGauss
     // Include factory calibration per data sheet and user environmental
@@ -533,12 +542,12 @@ void loop(void)
                IMU.magbias[2];
 /*
      // Print mag values in degree/sec
-      Serial.print("X-mag field: "); Serial.print(IMU.mx);
-      Serial.print(" mG ");
-      Serial.print("Y-mag field: "); Serial.print(IMU.my);
-      Serial.print(" mG ");
-      Serial.print("Z-mag field: "); Serial.print(IMU.mz);
-      Serial.println(" mG");
+      DSerial.print("X-mag field: "); DSerial.print(IMU.mx);
+      DSerial.print(" mG ");
+      DSerial.print("Y-mag field: "); DSerial.print(IMU.my);
+      DSerial.print(" mG ");
+      DSerial.print("Z-mag field: "); DSerial.print(IMU.mz);
+      DSerial.println(" mG");
   */                   
     // f is the sensor output x=0
       f[0] = (IMU.ax /SUMCNT + f[0] *(SUMCNT-1)/SUMCNT);
@@ -553,16 +562,16 @@ void loop(void)
         ff[1] = f[ (int)(abs(confvalues.achse1)-1) ] * (confvalues.achse1 > 0 ? 1 : -1) ;
         ff[2] = f[ (int)(abs(confvalues.achse2)-1) ] * (confvalues.achse2 > 0 ? 1 : -1) ;       
 /*        
-        Serial.print("n=");
-        Serial.print(n);
-        Serial.print(" f=");
-        Serial.print(f[n]);
-        Serial.print(" ff=");
-        Serial.print(ff[n]);
-        Serial.print("  vorz.=");
-        Serial.print((confvalues.achse[n] > 0 ? 1 : -1));
-        Serial.print(" confvalues.achse=");
-        Serial.println(confvalues.achse[n]);
+        DSerial.print("n=");
+        DSerial.print(n);
+        DSerial.print(" f=");
+        DSerial.print(f[n]);
+        DSerial.print(" ff=");
+        DSerial.print(ff[n]);
+        DSerial.print("  vorz.=");
+        DSerial.print((confvalues.achse[n] > 0 ? 1 : -1));
+        DSerial.print(" confvalues.achse=");
+        DSerial.println(confvalues.achse[n]);
   */      
       }
       // ab hier sind die Achsen korrigiert und man geht mit räumlich korrekten Achsen weiter. Nur noch die Drehung, die sich jetzt nich auf die 
@@ -624,23 +633,23 @@ void loop(void)
           else
             strcpy(buf,"   ");
   /*
-          Serial.print("fp_corr=");
-          Serial.print(fp_corr);
-          Serial.print(" fr_corr=");
-          Serial.print(fr_corr);
-          Serial.print(" z1=");
-          Serial.print(z1);
-          Serial.print(" z2=");
-          Serial.print(z2);
-          Serial.print(" z3=");
-          Serial.print(z3);
-          Serial.print(" z4=");
-          Serial.println(z4);
+          DSerial.print("fp_corr=");
+          DSerial.print(fp_corr);
+          DSerial.print(" fr_corr=");
+          DSerial.print(fr_corr);
+          DSerial.print(" z1=");
+          DSerial.print(z1);
+          DSerial.print(" z2=");
+          DSerial.print(z2);
+          DSerial.print(" z3=");
+          DSerial.print(z3);
+          DSerial.print(" z4=");
+          DSerial.println(z4);
 */
 
 #if defined USE_KOMPASS || defined USE_M5KOMPASS
         int ret = get_compass();  // hier auch eine Mittelung ?
-        if (ret !=0)  Serial.println("Error with compass: " + String(ret));
+        if (ret !=0)  DSerial.println("Error with compass: " + String(ret));
 #endif
 
 #ifdef USE_TEMP        
@@ -655,9 +664,9 @@ void loop(void)
         else 
           Dplus = false;
         
-        /*Serial.print(" Ch6=");
-        Serial.print(sensorValue);
-        Serial.print("  ");
+        /*DSerial.print(" Ch6=");
+        DSerial.print(sensorValue);
+        DSerial.print("  ");
         */
       }
       print_++;

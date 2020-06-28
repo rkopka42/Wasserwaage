@@ -141,7 +141,7 @@ int parse_line(conf_t cf[], char *name, char *val, char *buf)
     strcpy(name, varname);
     strcpy(val, value);
     
-    //Serial.print(" sizeof(config)= " + String(sizeof(config)));
+    //DSerial.print(" sizeof(config)= " + String(sizeof(config)));
     
     for (n=0;n<sizeof(config)/sizeof(conf_t);n++)
     {
@@ -267,7 +267,7 @@ int write_ini(String filename, conf_t cfg[], int outputtype, String &output)
         // -> <table lang="en-US">  geht, dann wird der . akzeptiert  
 
         if (outputtype==OUTPUT_SERIAL)
-          Serial.println(cfg[n].name + "=" + line);  
+          DSerial.println(cfg[n].name + "=" + line);  
         else if (outputtype==OUTPUT_TEXT or outputtype==OUTPUT_FILE)
           output += cfg[n].name + "=" + line + "\n";
         else if (outputtype==OUTPUT_HTML)
