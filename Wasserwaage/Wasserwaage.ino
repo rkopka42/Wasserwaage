@@ -466,7 +466,8 @@ void loop(void)
 #ifdef USE_DISPLAY
   if (1)
 #else  
-  if (!standby)
+  //if (!standby)
+  if (modeT==MODE_SLOW or modeT==MODE_FAST or modeT==MODE_NODPLUS or modeT==MODE_NODPLUSFAST)
 #endif
   {
 #ifndef USE_M5STACK    
@@ -522,8 +523,8 @@ void loop(void)
     IMU.magbias[2] = +125.;
 
 // 1900-2200 ca. 
-  comp_x=IMU.magCount[0]+3300+2000; 
-  comp_y=IMU.magCount[1]; 
+    comp_x=IMU.magCount[0]+3300+2000; 
+    comp_y=IMU.magCount[1]; 
   /*
        // Print mag values in degree/sec
         DSerial.print(" X-mag field: "); DSerial.print(IMU.magCount[0]);
@@ -652,10 +653,6 @@ void loop(void)
         if (ret !=0)  DSerial.println("Error with compass: " + String(ret));
 #endif
 
-#ifdef USE_TEMP        
-        getWeather();
-#endif
-
         //sensorValue = analogRead(ANALOGINPIN);  // Arduinofunktion
         // ESP32
         sensorValue = adc1_get_raw(ADC1_CHANNEL_6);  // 14V 2450  18K 3,3K -> 0,155 -> 14V * 0,155  = 2,16V -> 2450 -> 9V bei 273.0 -> 175,5 oder 14V=2450 ~ 
@@ -672,12 +669,79 @@ void loop(void)
       print_++;
   
     }
-    else  // keine Positionsinfo
+    else  // keine Positionsinfo gebraucht
     {
         // Fehlermeldung ausgeben
     }   
   } // standby      
 
+#ifdef USE_TEMP        
+  if (modeT!=MODE_SLEEP)
+    getWeather(); // für WLAN Zugriff
+#endif
+
+  int led_on_time,led_off_time;
+  
+  switch (modeT)
+  {
+    case MODE_NOCLIENT:  //  D+ aber kein Client, WLAN bleibt an, Berechnungen nicht nötig, außer Spannung...
+      led_off_time = LED_OFF;   // 3sek kurze Blitzer
+      led_on_time  = LED_ON;      
+      break;       
+      
+    case MODE_SLOW:      //  D+ und Client
+    case MODE_FAST:      //  D+ und Client und Anwahl in der GUI (10min lang, dann SLOW)
+    case MODE_NODPLUS:   //  kein D+, SLOW ?, nach 10min in SLEEP 
+    case MODE_NODPLUSFAST:   //  kein D+, aber vorher Client(FAST), SLOW, nach 10min in SLEEP 
+      if ( z1<= HEIGHT_OK and z2<= HEIGHT_OK and z3<= HEIGHT_OK and z4<= HEIGHT_OK )
+      {
+        led_off_time = LED_OFF_OK;   // schnelles Blinken
+        led_on_time  = LED_ON_OK;              
+      }
+      else
+      {
+        led_off_time = 0;   // Dauer AN
+        led_on_time  = 1000;   // (egal)    
+      }
+      break;       
+      
+    case MODE_WLAN:      //  kein D+, durch Taste (wie geht das mit längerem Sleep ? Zeiten für pressed_long anschauen)  AP ein für 10min oder bis wieder Taste. Dann SLEEP
+      led_off_time = 1000;
+      led_on_time  = 1000;      
+      break;       
+      
+    case MODE_SLEEP:     //  längerer Sleep, sonst nichts, auf Taste und D+ achten, dann NOCLIENT oder WLAN
+      led_off_time = 1000;   // (egal)
+      led_on_time  = 0;      // Dauer AUS
+      break;       
+  
+    default:  
+      DSerial.println("Falscher Modus : " + String(modeT));
+      modeT = MODE_SLEEP;
+      led_off_time = 1000;   // (egal)
+      led_on_time  = 0;      // Dauer AUS
+      break;       
+  }
+
+  if (led_on_time == 0)
+    digitalWrite(LICHT, LOW);
+  else if (led_off_time == 0)
+    digitalWrite(LICHT, HIGH);
+  else if (next_LED < millis())
+  {
+    if (last_LED_on)
+    {
+      digitalWrite(LICHT, LOW);   // turn the LED on (HIGH is the voltage level)
+      next_LED = millis() + led_on_time;
+    }
+    else
+    {
+      digitalWrite(LICHT, HIGH);    // turn the LED off by making the voltage LOW
+      next_LED = millis() + led_on_time;
+    }
+    last_LED_on = !last_LED_on;   
+  }
+  /*
   if (nb<=0)  // Number of clients
   {
      // LED just for standby - no clients 
@@ -717,6 +781,7 @@ void loop(void)
   {
     digitalWrite(LICHT, HIGH);
   }  
+*/
 
   if (modeT == MODE_SLEEP)
   {
