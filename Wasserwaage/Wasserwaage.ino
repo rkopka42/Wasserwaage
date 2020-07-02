@@ -92,6 +92,7 @@ int nb; // number of clients
 bool Dplus = false;
 time_t last_modeT_change = 0;
 bool spiffs_fail = false;
+String reloadstring="";
 
 // Unterfunktionen
 #include "cfg.h"
@@ -391,6 +392,12 @@ void loop(void)
   }
   if (modeT != modeT_old)
   {
+    if (modeT == MODE_FAST)
+      reloadstring = "clearInterval(reloadid);\n reloadid=setInterval(loadJS,1000);\n";
+    else
+      reloadstring = "clearInterval(reloadid);\n reloadid=setInterval(loadJS,5000);\n";
+
+  
     DSerial.println(" (2) modeT=" + String(modeT) + " deltaT=" + String(tt - last_modeT_change) + "  "); 
   
     last_modeT_change = tt;

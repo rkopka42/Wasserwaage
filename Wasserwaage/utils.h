@@ -629,7 +629,7 @@ void make_value_text(String &text)
 // set up JS code for painting the canvas
 void paint_main(String &message)
 {
- // DSerial.print(" paint_main ");
+  DSerial.print(" paint_main ");
   
     message =R"=====(       
     function paintmain()
@@ -689,6 +689,23 @@ void paint_main(String &message)
   String values;
   make_value_text(values);
   message += "document.getElementById(\"value_text\").innerHTML = \"" + values + "\";\n "; 
+
+  message += reloadstring;
+
+/*  geht nicht
+  if (reloadstring!="")
+    if (modeT == MODE_FAST)
+      message += "document.getElementById(\"Fast\").innerText = \"Slow\";\n "; 
+    else
+      message += "document.getElementById(\"Fast\").innerText = \"Fast\";\n "; 
+  */
+    
+  reloadstring="";
+/*  if (modeT == MODE_FAST)
+    message += "reloadtime=1000;\n";
+  else
+    message += "reloadtime=5000;\n";
+  */  
   message += "}\n";  
 }
 

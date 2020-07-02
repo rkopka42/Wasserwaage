@@ -257,10 +257,10 @@ void handleRoot()
   String button_text;
   String value_text;
   
-  if (/*do_refresh and */ modeT == MODE_FAST)
-    button_text = "<input class=\"button\" type=\"submit\" name=\"Fast\" value=\"Slow\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
+  if (modeT == MODE_FAST)
+    button_text = "<input class=\"button\" type=\"submit\" name=\"Fast\" id=\"Fast\" value=\"Slow\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
   else  
-    button_text = "<input class=\"button\" type=\"submit\" name=\"Fast\" value=\"Fast\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
+    button_text = "<input class=\"button\" type=\"submit\" name=\"Fast\" id=\"Fast\" value=\"Fast\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
     
 
   button_text +="<br>\n"  "<br>\n"  "<br>\n"
@@ -278,6 +278,8 @@ void handleRoot()
   </form>
   </div>
   <script>  
+var reloadtime=5000;
+var reloadid;
 
 // mit callback
 "use strict";
@@ -304,11 +306,14 @@ getScript1(url, function(){ paintmain();});
 }
   )====="; 
 
-  if (/*do_refresh*/ modeT == MODE_FAST)
-    message2+="setInterval(loadJS,1000);\n";
-    //message2+="setInterval(loadJS,3000);\n";
+
+  if (modeT == MODE_FAST)
+    message2+="reloadid = setInterval(loadJS,1000);\n";
+    //message2+="reloadid = setInterval(loadJS,3000);\n";
   else
-    message2+="setInterval(loadJS,5000);\n";
+    message2+="reloadid = setInterval(loadJS,5000);\n";
+    
+   //message2+="reloadid = setInterval(loadJS,reloadtime);\n";     
 
   String message4 = " </script>\n";  
   String end_text ="</body>\n </html>";
