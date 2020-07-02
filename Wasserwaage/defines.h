@@ -70,7 +70,7 @@
 #define MODE_SLEEP    0 //  länger Sleep, sonst nichts, auf Taste und D+ achten, dann NOCLIENT oder WLAN
 #define MODE_NODPLUSFAST  6 //  kein D+, aber vorher Client (FAST), SLOW, nach 10min in SLEEP 
 
-#define MODETIMEOUT 600 // sek bis ein Mode Wechsel auftritt
+#define MODETIMEOUT 30 //600 // sek bis ein Mode Wechsel auftritt
 
 // Werte, die man konfigurieren könnte, aber nur für Feeling, erstmal nur im Source lassen
 #define KEYTIME_MIN   100   // ms

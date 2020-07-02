@@ -6,7 +6,7 @@ void handleCalib()
 {
   bool        do_calib     =false;
   static bool calib_changed=false;  // erst nach Taste abspeichern
-  digitalWrite(LICHT, HIGH);  
+//  digitalWrite(LICHT, HIGH);  
   
   String calib = server.arg("Calib");
   // Button Wert verwenden
@@ -57,7 +57,7 @@ void handleCalib()
   DSerial.println("Root 200");
   
   delay(200);
-  digitalWrite(LICHT, HIGH);
+//  digitalWrite(LICHT, HIGH);
 }
 
 //String option_string;
@@ -78,7 +78,7 @@ void handleConfig()
   bool         is_save=false;
   confvalues_t confvalues_old;
 
-  digitalWrite(LICHT, HIGH);  // wieso ?
+ // digitalWrite(LICHT, HIGH);  // wieso ?
     
   String config_ = server.arg("Config");
 
@@ -199,23 +199,27 @@ void handleConfig()
   DSerial.println("Root 200");
   
   delay(200);
-  digitalWrite(LICHT, HIGH);
+  //digitalWrite(LICHT, HIGH);
 }
 
 // return JS code for main canvas
 void handleMain() 
 {
   String message;
-  
+  DSerial.println(" main.js(0) ");
   paint_main(message);   // insert JS function 
 
-  server.send(200, "text/html", message);
+  //server.send(200, "text/html", message);
+  server.send(200, "application/javascript", message);
+  
+  DSerial.println(" main.js ");
 }
 
 void handleRoot() 
 {
-  digitalWrite(LICHT, LOW);
-
+  //digitalWrite(LICHT, LOW);
+  DSerial.println(" handle root");
+  
   do_calib=false;
    
   String cont = server.arg("Fast");
@@ -225,12 +229,14 @@ void handleRoot()
     //do_refresh=true;
     modeT = MODE_FAST;
     last_modeT_change = time(NULL);
+    DSerial.print(" FAST ");
   }
   else if (cont == "Slow" and /*do_refresh*/  modeT == MODE_FAST)
   {
     //do_refresh=false;
     modeT = MODE_SLOW;
     last_modeT_change = time(NULL);
+    DSerial.print(" SLOW ");
   }
   
   String message1 =R"=====(
@@ -252,7 +258,7 @@ void handleRoot()
   String value_text;
   
   if (/*do_refresh and */ modeT == MODE_FAST)
-    button_text = "<input class=\"button\" type=\"submit\" name=\"Slow\" value=\"Slow\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
+    button_text = "<input class=\"button\" type=\"submit\" name=\"Fast\" value=\"Slow\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
   else  
     button_text = "<input class=\"button\" type=\"submit\" name=\"Fast\" value=\"Fast\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
     
@@ -299,7 +305,8 @@ getScript1(url, function(){ paintmain();});
   )====="; 
 
   if (/*do_refresh*/ modeT == MODE_FAST)
-    message2+="setInterval(loadJS,1000);\n";
+    //message2+="setInterval(loadJS,1000);\n";
+    message2+="setInterval(loadJS,3000);\n";
   else
     message2+="setInterval(loadJS,5000);\n";
 
@@ -323,7 +330,7 @@ getScript1(url, function(){ paintmain();});
           DSerial.println(z4);
   
   delay(100);
-  digitalWrite(LICHT, HIGH);
+ // digitalWrite(LICHT, HIGH);
 }
 
 #ifdef SHOW_KOMPASS
@@ -343,12 +350,12 @@ void handleJSCompass()
   
   paint_compass(message);   // insert JS function 
 
-  server.send(200, "text/html", message);
+  server.send(200, "application/javascript", message);
 }
 
 void handleCompass() 
 {
-  digitalWrite(LICHT, LOW);
+  //digitalWrite(LICHT, LOW);
   bool config_changed=false; 
   
   String cont = server.arg("Reload");
@@ -514,6 +521,6 @@ getScript1(url, function(){ paintcompass();});
           DSerial.println(z4);
 
   delay(100);
-  digitalWrite(LICHT, HIGH);
+ // digitalWrite(LICHT, HIGH);
 }
 #endif

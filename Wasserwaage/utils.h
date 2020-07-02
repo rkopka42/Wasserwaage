@@ -629,6 +629,8 @@ void make_value_text(String &text)
 // set up JS code for painting the canvas
 void paint_main(String &message)
 {
+  DSerial.print(" paint_main ");
+  
     message =R"=====(       
     function paintmain()
     {

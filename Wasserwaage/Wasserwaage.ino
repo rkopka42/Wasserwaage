@@ -335,14 +335,14 @@ void loop(void)
     pressedT=false;
   }
 
-  DSerial.print(" modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
+//  DSerial.print(" Dplus=" + String(Dplus) + " modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
   int modeT_old = modeT;
   bool is10min =  last_modeT_change + MODETIMEOUT < time(NULL);
   switch (modeT)
   {
     case MODE_NOCLIENT:  //  D+ aber kein Client, WLAN bleibt an, Berechnungen nicht nötig, außer Spannung...
       if (!Dplus)            modeT = MODE_NODPLUS;
-      else if (nb>=0)        modeT = MODE_SLOW; 
+      else if (nb>0)         modeT = MODE_SLOW; 
       break;       
       
     case MODE_SLOW:      //  D+ und Client
@@ -352,7 +352,7 @@ void loop(void)
       
     case MODE_FAST:      //  D+ und Client und Anwahl in der GUI (10min lang, dann SLOW)
       if (!Dplus)            modeT = MODE_NODPLUSFAST;
-      else if (is10min)      modeT = MODE_SLOW;
+      else if (is10min)      modeT = MODE_SLOW;   // muß auch Seite neu laden !!!
       else if (nb<=0)        modeT = MODE_NOCLIENT;
       break;       
       
@@ -388,6 +388,8 @@ void loop(void)
   }
   if (modeT != modeT_old)
   {
+    DSerial.println(" (2) modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
+  
     last_modeT_change = time(NULL);
     //je nach Mode WLAN an aus
     if (modeT==MODE_SLEEP)
@@ -400,7 +402,7 @@ void loop(void)
     }
   }
     
-  DSerial.print(" (2) modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
+  //DSerial.println(" (2) modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
   
 #ifdef USE_M5STACK    // auch bei AVR Variante so machen
   if ( !digitalRead(CAL_KEY))
@@ -581,7 +583,7 @@ void loop(void)
       fyrot = sin(confvalues.angle*PI/180)*ff[0] - cos(confvalues.angle*PI/180)*ff[1];
 
       // Ausgabe nur bei jedem xten Durchlauf, so ca. 4-5 Werte pro sek.
-      if ((print_ % CALC_PER_DISPLAY ) ==0 and !standby)
+      if ((print_ % CALC_PER_DISPLAY ) ==0) // and !standby)
       { 
           // in Funktion auslagern, evt. auch mal ein IRQ/Thread          
           if ( ff[2] !=0)
@@ -625,6 +627,7 @@ void loop(void)
 #ifdef USE_DISPLAY
           show_display();
 #endif
+/*
           char buf[10];
           
           if (do_calib)
@@ -633,6 +636,8 @@ void loop(void)
             strcpy(buf,"OK ");
           else
             strcpy(buf,"   ");
+// was passiert mit buf ??
+  */          
   /*
           DSerial.print("fp_corr=");
           DSerial.print(fp_corr);
@@ -651,20 +656,7 @@ void loop(void)
 #if defined USE_KOMPASS || defined USE_M5KOMPASS
         int ret = get_compass();  // hier auch eine Mittelung ?
         if (ret !=0)  DSerial.println("Error with compass: " + String(ret));
-#endif
-
-        //sensorValue = analogRead(ANALOGINPIN);  // Arduinofunktion
-        // ESP32
-        sensorValue = adc1_get_raw(ADC1_CHANNEL_6);  // 14V 2450  18K 3,3K -> 0,155 -> 14V * 0,155  = 2,16V -> 2450 -> 9V bei 273.0 -> 175,5 oder 14V=2450 ~ 
-        if (sensorValue/175.5 > 10)
-          Dplus = true;
-        else 
-          Dplus = false;
-        
-        /*DSerial.print(" Ch6=");
-        DSerial.print(sensorValue);
-        DSerial.print("  ");
-        */
+#endif       
       }
       print_++;
   
@@ -673,13 +665,25 @@ void loop(void)
     {
         // Fehlermeldung ausgeben
     }   
-  } // standby      
+  } // !standby      
 
 #ifdef USE_TEMP        
   if (modeT!=MODE_SLEEP)
     getWeather(); // für WLAN Zugriff
 #endif
 
+  //sensorValue = analogRead(ANALOGINPIN);  // Arduinofunktion
+  // ESP32
+  sensorValue = adc1_get_raw(ADC1_CHANNEL_6);  // 14V 2450  18K 3,3K -> 0,155 -> 14V * 0,155  = 2,16V -> 2450 -> 9V bei 273.0 -> 175,5 oder 14V=2450 ~ 
+  if (sensorValue/175.5 > 10)   // 10.3V
+    Dplus = true;
+  else 
+    Dplus = false;
+  /*
+  DSerial.print(" Ch6=");
+  DSerial.print(sensorValue);
+  DSerial.print("  ");
+*/
   int led_on_time,led_off_time;
   
   switch (modeT)
@@ -798,7 +802,8 @@ void loop(void)
       }
       else
         flag_nosleep=false;
-        
+#else
+    //delay(100);        
 #endif        
   }
 }
