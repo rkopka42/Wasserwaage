@@ -4,8 +4,7 @@ mit WLAN/Browser Ausgabe
 ![Bildschirmfoto](http://kopka.at/j/IMG_1477sm.jpg)
 ---
 
-7441856 not working in FAST mode
- 
+
 Ein Gyrosensor wird ausgewertet. Danach wird die Lage des Fahrzeugs errechnet, incl. der nötigen Unterlegkeile für die momentane Lage.
 Außer einem mit Arduino programmierten ESP32-Modul wird fast nichts benötigt. Ein DCDC-Wandler für die Stromversorgung. 2 Widerstände für den D+ Eingang. Über I2C ein GyroModul. Nach Wunsch ebenfalls über I2C ein Kompaß und ein Temperaturmeßmodul. Eine LED.
 ![Platine](http://kopka.at/j/IMG_1515sm2.jpg)
