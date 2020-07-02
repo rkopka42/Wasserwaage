@@ -56,7 +56,7 @@ void handleCalib()
   server.send(200, "text/html", message);
   DSerial.println("Root 200");
   
-  delay(200);
+ // delay(200);
 //  digitalWrite(LICHT, HIGH);
 }
 
@@ -198,7 +198,7 @@ void handleConfig()
   server.send(200, "text/html", message);
   DSerial.println("Root 200");
   
-  delay(200);
+  //delay(200);
   //digitalWrite(LICHT, HIGH);
 }
 
@@ -206,13 +206,13 @@ void handleConfig()
 void handleMain() 
 {
   String message;
-  DSerial.println(" main.js(0) ");
+//  DSerial.println(" main.js(0) ");
   paint_main(message);   // insert JS function 
 
   //server.send(200, "text/html", message);
   server.send(200, "application/javascript", message);
   
-  DSerial.println(" main.js ");
+  //DSerial.println(" main.js ");
 }
 
 void handleRoot() 
@@ -305,8 +305,8 @@ getScript1(url, function(){ paintmain();});
   )====="; 
 
   if (/*do_refresh*/ modeT == MODE_FAST)
-    //message2+="setInterval(loadJS,1000);\n";
-    message2+="setInterval(loadJS,3000);\n";
+    message2+="setInterval(loadJS,1000);\n";
+    //message2+="setInterval(loadJS,3000);\n";
   else
     message2+="setInterval(loadJS,5000);\n";
 
@@ -329,7 +329,7 @@ getScript1(url, function(){ paintmain();});
           DSerial.print(" z4=");
           DSerial.println(z4);
   
-  delay(100);
+  //delay(100);
  // digitalWrite(LICHT, HIGH);
 }
 
@@ -520,7 +520,7 @@ getScript1(url, function(){ paintcompass();});
           DSerial.print(" z4=");
           DSerial.println(z4);
 
-  delay(100);
+ // delay(100);
  // digitalWrite(LICHT, HIGH);
 }
 #endif

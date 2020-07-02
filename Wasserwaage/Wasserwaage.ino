@@ -296,8 +296,11 @@ void loop(void)
 
   long        time_T        =millis()-last_keyT; // Zeit gedrückt
   bool        press_shortT  =false, press_long_activeT=false, press_longT=false;
+  time_t tt;
   
   server.handleClient();          //Handle client requests
+
+  tt = time(NULL);
   
   nb = WiFi.softAPgetStationNum();
 
@@ -337,7 +340,7 @@ void loop(void)
 
 //  DSerial.print(" Dplus=" + String(Dplus) + " modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
   int modeT_old = modeT;
-  bool is10min =  last_modeT_change + MODETIMEOUT < time(NULL);
+  bool is10min =  last_modeT_change + MODETIMEOUT < tt;
   switch (modeT)
   {
     case MODE_NOCLIENT:  //  D+ aber kein Client, WLAN bleibt an, Berechnungen nicht nötig, außer Spannung...
@@ -388,9 +391,9 @@ void loop(void)
   }
   if (modeT != modeT_old)
   {
-    DSerial.println(" (2) modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
+    DSerial.println(" (2) modeT=" + String(modeT) + " deltaT=" + String(tt - last_modeT_change) + "  "); 
   
-    last_modeT_change = time(NULL);
+    last_modeT_change = tt;
     //je nach Mode WLAN an aus
     if (modeT==MODE_SLEEP)
     {
@@ -581,6 +584,8 @@ void loop(void)
       // Sensor xy-Achsen sondern auf die flache xy Achsen bezieht
       fxrot = cos(confvalues.angle*PI/180)*ff[0] + sin(confvalues.angle*PI/180)*ff[1];
       fyrot = sin(confvalues.angle*PI/180)*ff[0] - cos(confvalues.angle*PI/180)*ff[1];
+
+//DSerial.print(" p=" + String(print_) + " ");
 
       // Ausgabe nur bei jedem xten Durchlauf, so ca. 4-5 Werte pro sek.
       if ((print_ % CALC_PER_DISPLAY ) ==0) // and !standby)
