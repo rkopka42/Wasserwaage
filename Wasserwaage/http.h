@@ -209,35 +209,27 @@ void handleConfig()
 // return JS code for main canvas
 void handleMain() 
 {
-  String message;
-//  DSerial.println(" main.js(0) ");
+  String message;  
   paint_main(message);   // insert JS function 
-
-  //server.send(200, "text/html", message);
   server.send(200, "application/javascript", message);
-  
-  //DSerial.println(" main.js ");
 }
 
 void handleRoot() 
 {
-  //digitalWrite(LICHT, LOW);
   DSerial.println(" handle root");
   
   do_calib=false;
    
   String cont = server.arg("Fast");
   // Button Wert verwenden
-  if (cont == "Fast" and /*not do_refresh*/  modeT != MODE_FAST)  // ohne DPLUS ein Umweg, der aber dann zum richtigen Mode führt
+  if (cont == "Fast" and modeT != MODE_FAST)  // ohne DPLUS ein Umweg, der aber dann zum richtigen Mode führt
   {
-    //do_refresh=true;
     modeT = MODE_FAST;
     last_modeT_change = time(NULL);
     DSerial.print(" FAST ");
   }
-  else if (cont == "Slow" and /*do_refresh*/  modeT == MODE_FAST)
+  else if (cont == "Slow" and modeT == MODE_FAST)
   {
-    //do_refresh=false;
     modeT = MODE_SLOW;
     last_modeT_change = time(NULL);
     DSerial.print(" SLOW ");
@@ -282,7 +274,7 @@ void handleRoot()
   </form>
   </div>
   <script>  
-var reloadtime=5000;
+
 var reloadid;
 var but;
 
@@ -314,12 +306,9 @@ getScript1(url, function(){ paintmain();});
 
   if (modeT == MODE_FAST)
     message2+="reloadid = setInterval(loadJS,1000);\n";
-    //message2+="reloadid = setInterval(loadJS,3000);\n";
   else
     message2+="reloadid = setInterval(loadJS,5000);\n";
     
-   //message2+="reloadid = setInterval(loadJS,reloadtime);\n";     
-
   String message4 = " </script>\n";  
   String end_text ="</body>\n </html>";
 
@@ -338,9 +327,6 @@ getScript1(url, function(){ paintmain();});
           DSerial.print(z3);
           DSerial.print(" z4=");
           DSerial.println(z4);
-  
-  //delay(100);
- // digitalWrite(LICHT, HIGH);
 }
 
 #ifdef SHOW_KOMPASS
@@ -365,7 +351,6 @@ void handleJSCompass()
 
 void handleCompass() 
 {
-  //digitalWrite(LICHT, LOW);
   bool config_changed=false; 
   
   String cont = server.arg("Reload");
@@ -506,7 +491,7 @@ getScript1(url, function(){ paintcompass();});
 }
   )====="; 
 
-  if (/*do_refresh*/ modeT == MODE_FAST)
+  if (modeT == MODE_FAST)
     message2+="setInterval(loadJS,1000);\n";
   else
     message2+="setInterval(loadJS,5000);\n";
@@ -529,8 +514,5 @@ getScript1(url, function(){ paintcompass();});
           DSerial.print(z3);
           DSerial.print(" z4=");
           DSerial.println(z4);
-
- // delay(100);
- // digitalWrite(LICHT, HIGH);
 }
 #endif

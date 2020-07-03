@@ -309,7 +309,7 @@ void loop(void)
 
  // DSerial.print(" T=" + String(digitalRead(TASTER))+ " ");
 
-  if (modeT==MODE_SLEEP)
+  if (modeT==MODE_SLEEP)  // Zeitmessung macht hier keinen Sinn
   {
     if ( !digitalRead(TASTER))
       press_shortT = true;
@@ -347,7 +347,6 @@ void loop(void)
     }
   }
   
-
 //  DSerial.print(" Dplus=" + String(Dplus) + " modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
   int modeT_old = modeT;
   bool is10min =  last_modeT_change + MODETIMEOUT < tt;
@@ -385,15 +384,13 @@ void loop(void)
 
     case MODE_WLAN:      //  kein D+, durch Taste (wie geht das mit längerem Sleep ? Zeiten für pressed_long anschauen)  AP ein für 10min oder bis wieder Taste. Dann SLEEP
       if (Dplus)             modeT = MODE_NOCLIENT;
-      else if (press_shortT 
-            /*or press_longT*/)  modeT = MODE_SLEEP;
+      else if (press_shortT) modeT = MODE_SLEEP;
       else if (is10min)      modeT = MODE_SLEEP;
       break;       
       
     case MODE_SLEEP:     //  längerer Sleep, sonst nichts, auf Taste und D+ achten, dann NOCLIENT oder WLAN
       if (Dplus)             modeT = MODE_NOCLIENT;
-      else if (press_shortT 
-            or press_longT)  modeT = MODE_WLAN;
+      else if (press_shortT) modeT = MODE_WLAN;
       break;       
   
     default:  
@@ -401,13 +398,13 @@ void loop(void)
       modeT = MODE_SLEEP;
       break;       
   }
+  
   if (modeT != modeT_old)
   {
     if (modeT == MODE_FAST)
       reloadstring = "clearInterval(reloadid);\n reloadid=setInterval(loadJS,1000);\n";
     else
       reloadstring = "clearInterval(reloadid);\n reloadid=setInterval(loadJS,5000);\n";
-
   
     DSerial.println(" (2) modeT=" + String(modeT) + " deltaT=" + String(tt - last_modeT_change) + "  "); 
   
@@ -772,65 +769,16 @@ void loop(void)
     }
     last_LED_on = !last_LED_on;   
   }
-  /*
-  if (nb<=0)  // Number of clients
-  {
-     // LED just for standby - no clients 
-    if (next_LED < millis())
-    {
-      if (last_LED_on)
-      {
-        digitalWrite(LICHT, LOW);   // turn the LED on (HIGH is the voltage level)
-        next_LED = millis() + LED_OFF;
-      }
-      else
-      {
-        digitalWrite(LICHT, HIGH);    // turn the LED off by making the voltage LOW
-        next_LED = millis() + LED_ON;
-      }
-      last_LED_on = !last_LED_on;   
-    }
-  }
-  else if ( z1<= HEIGHT_OK and z2<= HEIGHT_OK and z3<= HEIGHT_OK and z4<= HEIGHT_OK )
-  {   // OK -> schnell blinken
-    if (next_LED < millis())
-    {
-      if (last_LED_on)
-      {
-        digitalWrite(LICHT, LOW);   // turn the LED on (HIGH is the voltage level)
-        next_LED = millis() + LED_OFF_OK;
-      }
-      else
-      {
-        digitalWrite(LICHT, HIGH);    // turn the LED off by making the voltage LOW
-        next_LED = millis() + LED_ON_OK;
-      }
-      last_LED_on = !last_LED_on;     
-    }
-  }
-  else    // normaler Betrieb
-  {
-    digitalWrite(LICHT, HIGH);
-  }  
-*/
 
   if (modeT == MODE_SLEEP)
   {
     // Sleep für 500ms(?)
 #ifdef DO_SLEEP
       int sleep_time_in_ms = 500;
-      
-      if (1)
-      {     
-        esp_sleep_enable_timer_wakeup(sleep_time_in_ms * 1000); //0.1 seconds scheint auch nicht mehr Strom zu brauchen, reagiert aber besser;
-        int ret = esp_light_sleep_start();
-    
-        DSerial.print(" S ");   
-      }
-   //   else
-     //   flag_nosleep=false;
-#else
-    //delay(100);        
+      esp_sleep_enable_timer_wakeup(sleep_time_in_ms * 1000);
+      int ret = esp_light_sleep_start();
+  
+      DSerial.print(" S ");
 #endif        
   }
 }

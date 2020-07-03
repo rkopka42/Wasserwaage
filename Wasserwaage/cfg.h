@@ -237,88 +237,73 @@ DSerial.println(file.size());
 // in filename die Werte aus cv nach cfg eintragen
 int write_ini(String filename, conf_t cfg[], int outputtype, String &output)
 {
-  //DSerial.print(" wi ");
-  
 #if defined(ESP8266) || defined(ESP32)
 
-//DSerial.print(" wi(2) ");
- int n;
- String line,line2;
- File file;
+  int n;
+  String line,line2;
+  File file;
  
   output="";
-   for (n=0;n<sizeof(config)/sizeof(conf_t);n++)
+  for (n=0;n<sizeof(config)/sizeof(conf_t);n++)
+  {
+    if (cfg[n].value != NULL)
     {
-      if (cfg[n].value != NULL)
+      line="";
+      if (cfg[n].typ == TYPE_INT or cfg[n].typ == TYPE_INT_HIDDEN or cfg[n].typ==TYPE_INT_DONT_USE)
       {
-        line="";
-        if (cfg[n].typ == TYPE_INT or cfg[n].typ == TYPE_INT_HIDDEN or cfg[n].typ==TYPE_INT_DONT_USE)
-        {
-          line = String(*(int*)(cfg[n].value));    
-          line2 = "<tr><td>" + cfg[n].text + " (" + String(cfg[n].min) + "..." + String(cfg[n].max) + ") </td><td> <input " + (cfg[n].typ == TYPE_INT_HIDDEN ? " disabled ":" ") + "type=\"number\" name=\"input" + String(n) + "\"" + "min=\"" + String(cfg[n].min) + "\" max=\""  + String(cfg[n].max) + "\" value=\"" + line + "\"> </td></tr>";
-        }
-        else if (cfg[n].typ == TYPE_STRING or cfg[n].typ == TYPE_STRING_HIDDEN)
-        {
-          line = *(String*)(cfg[n].value);              
-          line2 =  "<tr><td>" + cfg[n].text + " (len max:" + String(cfg[n].max) + ") </td><td>  <input " + (cfg[n].typ == TYPE_STRING_HIDDEN ? " disabled ":" ") + "type=\"text\" name=\"input" + String(n) + "\"" + "\" maxlength=\""  + String(cfg[n].max) + "\" value=\"" + line + "\"> </td></tr>";
-        }
-        else if (cfg[n].typ == TYPE_FLOAT or cfg[n].typ == TYPE_FLOAT_HIDDEN)
-        {
-          line = String(*(float*)(cfg[n].value));   
-          line2 = "<tr><td>" + cfg[n].text + " (" + String(cfg[n].min) + "..." + String(cfg[n].max) + ") </td><td> <input " + (cfg[n].typ == TYPE_FLOAT_HIDDEN ? " disabled ":" ") + " step=\"any\" type=\"number\" name=\"input" + String(n) + "\"" + "min=\"" + String(cfg[n].min) + "\" max=\""  + String(cfg[n].max) + "\" value=\"" + line + "\"> </td></tr>";
-        }
-        //  pattern=\"[0-9]+([\\,|\\.][0-9]+)?\"  bringt nichts
-        // -> <table lang="en-US">  geht, dann wird der . akzeptiert  
-
-        //DSerial.println(" FORM(1): "+ String(line2)); 
-
-        //DSerial.println("outputtype=" + String( outputtype) + " Typ=" + String(cfg[n].typ) );
-        
-        if (outputtype==OUTPUT_SERIAL)
-        {
-          DSerial.println(cfg[n].name + "=" + line);  
-          //DSerial.print(" c ");
-        }
-        else if (outputtype==OUTPUT_TEXT or outputtype==OUTPUT_FILE)
-        {
-          output += cfg[n].name + "=" + line + "\n";
-          //DSerial.print(" b ");
-        }
-        else if (outputtype==OUTPUT_HTML)
-        {
-           output += cfg[n].text + "=" +line + "<br>\n";
-           //DSerial.print(" a ");
-        }
-        else if (outputtype==OUTPUT_FORM and cfg[n].typ!=TYPE_DONT_USE and cfg[n].typ!=TYPE_INT_DONT_USE)        // FORM noch mit Tabelle ! Maße der Tabelle außen definieren
-        {
-          //DSerial.println(" FORM: "+ String(line2)); 
-          output += line2 + "\n"; //"<br>\n";
-          //DSerial.print(" d ");
-        }
-        else
-        {
-          //DSerial.println( "outputtype=" + String( outputtype) + "  not " + String(OUTPUT_FORM) );
-          //DSerial.print(" e ");
-        }
-
-        //DSerial.println(" FORM(2): "+ String(output)); 
-      } //if NULL
-    } // for
-    if (outputtype==OUTPUT_FILE)          
-    {
-      File file = SPIFFS.open(filename, FILE_WRITE);
-      if(!file)
+        line = String(*(int*)(cfg[n].value));    
+        line2 = "<tr><td>" + cfg[n].text + " (" + String(cfg[n].min) + "..." + String(cfg[n].max) + ") </td><td> <input " + (cfg[n].typ == TYPE_INT_HIDDEN ? " disabled ":" ") + "type=\"number\" name=\"input" + String(n) + "\"" + "min=\"" + String(cfg[n].min) + "\" max=\""  + String(cfg[n].max) + "\" value=\"" + line + "\"> </td></tr>";
+      }
+      else if (cfg[n].typ == TYPE_STRING or cfg[n].typ == TYPE_STRING_HIDDEN)
       {
-        DSerial.println("- failed to open file for writing");
+        line = *(String*)(cfg[n].value);              
+        line2 =  "<tr><td>" + cfg[n].text + " (len max:" + String(cfg[n].max) + ") </td><td>  <input " + (cfg[n].typ == TYPE_STRING_HIDDEN ? " disabled ":" ") + "type=\"text\" name=\"input" + String(n) + "\"" + "\" maxlength=\""  + String(cfg[n].max) + "\" value=\"" + line + "\"> </td></tr>";
+      }
+      else if (cfg[n].typ == TYPE_FLOAT or cfg[n].typ == TYPE_FLOAT_HIDDEN)
+      {
+        line = String(*(float*)(cfg[n].value));   
+        line2 = "<tr><td>" + cfg[n].text + " (" + String(cfg[n].min) + "..." + String(cfg[n].max) + ") </td><td> <input " + (cfg[n].typ == TYPE_FLOAT_HIDDEN ? " disabled ":" ") + " step=\"any\" type=\"number\" name=\"input" + String(n) + "\"" + "min=\"" + String(cfg[n].min) + "\" max=\""  + String(cfg[n].max) + "\" value=\"" + line + "\"> </td></tr>";
+      }
+      //  pattern=\"[0-9]+([\\,|\\.][0-9]+)?\"  bringt nichts
+      // -> <table lang="en-US">  geht, dann wird der . akzeptiert  
+
+      if (outputtype==OUTPUT_SERIAL)
+      {
+        DSerial.println(cfg[n].name + "=" + line);  
+      }
+      else if (outputtype==OUTPUT_TEXT or outputtype==OUTPUT_FILE)
+      {
+        output += cfg[n].name + "=" + line + "\n";
+      }
+      else if (outputtype==OUTPUT_HTML)
+      {
+         output += cfg[n].text + "=" +line + "<br>\n";
+      }
+      else if (outputtype==OUTPUT_FORM and cfg[n].typ!=TYPE_DONT_USE and cfg[n].typ!=TYPE_INT_DONT_USE)        // FORM noch mit Tabelle ! Maße der Tabelle außen definieren
+      {
+        output += line2 + "\n"; //"<br>\n";
       }
       else
-      {  
-        DSerial.println(F("File opened ok"));
-        file.print(output);     
-        DSerial.println(F("sucessfully written on SPIFFS"));
-        file.close();
-      }          
+      {
+        //DSerial.println( "outputtype=" + String( outputtype) + "  not " + String(OUTPUT_FORM) );        
+      }
+    } //if NULL
+  } // for
+  if (outputtype==OUTPUT_FILE)          
+  {
+    File file = SPIFFS.open(filename, FILE_WRITE);
+    if(!file)
+    {
+      DSerial.println("- failed to open file for writing");
     }
+    else
+    {  
+      DSerial.println(F("File opened ok"));
+      file.print(output);     
+      DSerial.println(F("sucessfully written on SPIFFS"));
+      file.close();
+    }          
+  }
 #endif    
   return 0;  
 }
