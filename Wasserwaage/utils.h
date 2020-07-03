@@ -268,7 +268,7 @@ int get_compass()
   comp_x=((MsbX&0x0f)*256)+(LsbX); 
   comp_y=((MsbY&0x0f)*256)+(LsbY); 
 #endif
-  /*
+  
   DSerial.print(x);
   DSerial.print(", ");
   DSerial.print(y);
@@ -279,7 +279,7 @@ int get_compass()
   DSerial.print(", ");
   DSerial.print(y);
   DSerial.print(",  --> ");
-  */
+  
   //x = map(x, 1900, 2188, -180, 180); 
   //y = map(y, 1910, 2193, -180, 180); 
   mygrad = atan2(x, y)*180/3.1415927410; 
@@ -686,26 +686,29 @@ void paint_main(String &message)
   draw_pic(bild, back, sizeof(back)/sizeof(xy), 455, 243,  (float)int(-fr_corr*5), 1.3);
   message += farben[farbe] + bild;  
 
+  #ifdef USE_TEMP        
+  //if (modeT == MODE_WLAN)
+    getWeather(); // für WLAN Zugriff eigens aufrufen, da nicht in der Meßschleife
+  #endif
+
   String values;
   make_value_text(values);
   message += "document.getElementById(\"value_text\").innerHTML = \"" + values + "\";\n "; 
 
-  message += reloadstring;
+  message += reloadstring;  // Interval umstellen
 
-/*  geht nicht
   if (reloadstring!="")
+  {
     if (modeT == MODE_FAST)
-      message += "document.getElementById(\"Fast\").innerText = \"Slow\";\n "; 
+    {
+      message += "but=document.getElementById(\"Fast\");\n but.value = \"Slow\";\n ";       
+    }
     else
-      message += "document.getElementById(\"Fast\").innerText = \"Fast\";\n "; 
-  */
-    
+    {
+      message += "but=document.getElementById(\"Fast\");\n but.value= \"Fast\";\n "; 
+    } 
+  }
   reloadstring="";
-/*  if (modeT == MODE_FAST)
-    message += "reloadtime=1000;\n";
-  else
-    message += "reloadtime=5000;\n";
-  */  
   message += "}\n";  
 }
 

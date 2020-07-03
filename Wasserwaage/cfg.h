@@ -237,7 +237,11 @@ DSerial.println(file.size());
 // in filename die Werte aus cv nach cfg eintragen
 int write_ini(String filename, conf_t cfg[], int outputtype, String &output)
 {
+  //DSerial.print(" wi ");
+  
 #if defined(ESP8266) || defined(ESP32)
+
+//DSerial.print(" wi(2) ");
  int n;
  String line,line2;
  File file;
@@ -266,15 +270,39 @@ int write_ini(String filename, conf_t cfg[], int outputtype, String &output)
         //  pattern=\"[0-9]+([\\,|\\.][0-9]+)?\"  bringt nichts
         // -> <table lang="en-US">  geht, dann wird der . akzeptiert  
 
+        //DSerial.println(" FORM(1): "+ String(line2)); 
+
+        //DSerial.println("outputtype=" + String( outputtype) + " Typ=" + String(cfg[n].typ) );
+        
         if (outputtype==OUTPUT_SERIAL)
+        {
           DSerial.println(cfg[n].name + "=" + line);  
+          //DSerial.print(" c ");
+        }
         else if (outputtype==OUTPUT_TEXT or outputtype==OUTPUT_FILE)
+        {
           output += cfg[n].name + "=" + line + "\n";
+          //DSerial.print(" b ");
+        }
         else if (outputtype==OUTPUT_HTML)
+        {
            output += cfg[n].text + "=" +line + "<br>\n";
+           //DSerial.print(" a ");
+        }
         else if (outputtype==OUTPUT_FORM and cfg[n].typ!=TYPE_DONT_USE and cfg[n].typ!=TYPE_INT_DONT_USE)        // FORM noch mit Tabelle ! Maße der Tabelle außen definieren
+        {
+          //DSerial.println(" FORM: "+ String(line2)); 
           output += line2 + "\n"; //"<br>\n";
-        } //if NULL
+          //DSerial.print(" d ");
+        }
+        else
+        {
+          //DSerial.println( "outputtype=" + String( outputtype) + "  not " + String(OUTPUT_FORM) );
+          //DSerial.print(" e ");
+        }
+
+        //DSerial.println(" FORM(2): "+ String(output)); 
+      } //if NULL
     } // for
     if (outputtype==OUTPUT_FILE)          
     {

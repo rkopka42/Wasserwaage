@@ -29,7 +29,7 @@ void handleCalib()
     }
   }
 
-  String werte = "Pitch: " + String(fp_corr, 2)+ "Roll: " + String(fr_corr, 2);
+  String werte = "Pitch: " + String(fp_corr, 2)+ "<br>Roll: " + String(fr_corr, 2);
   // add calib data
   
   String message =R"=====(
@@ -173,8 +173,8 @@ void handleConfig()
             </select><td>      
     </tr>
     CONFIGVALUES_
-    </table>
-  </form>
+   </table>
+ </form>
     <br>
     <br>
     STELLVERTRETER
@@ -194,7 +194,11 @@ void handleConfig()
   String output;
   write_ini("" , config, OUTPUT_FORM, output);
   message.replace("CONFIGVALUES_", output);
-  
+
+  DSerial.println(" ConfigText:");
+  DSerial.println(output);
+  write_ini("" , config, OUTPUT_SERIAL, output);
+    
   server.send(200, "text/html", message);
   DSerial.println("Root 200");
   
@@ -256,7 +260,7 @@ void handleRoot()
 
   String button_text;
   String value_text;
-  
+
   if (modeT == MODE_FAST)
     button_text = "<input class=\"button\" type=\"submit\" name=\"Fast\" id=\"Fast\" value=\"Slow\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
   else  
@@ -280,6 +284,7 @@ void handleRoot()
   <script>  
 var reloadtime=5000;
 var reloadid;
+var but;
 
 // mit callback
 "use strict";

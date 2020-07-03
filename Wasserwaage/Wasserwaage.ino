@@ -639,17 +639,7 @@ void loop(void)
 #ifdef USE_DISPLAY
           show_display();
 #endif
-/*
-          char buf[10];
-          
-          if (do_calib)
-            strcpy(buf,"cal");
-          else if ( z1<= HEIGHT_OK and z2<= HEIGHT_OK and z3<= HEIGHT_OK and z4<= HEIGHT_OK ) // test for OK
-            strcpy(buf,"OK ");
-          else
-            strcpy(buf,"   ");
-// was passiert mit buf ??
-  */          
+    
   /*
           DSerial.print("fp_corr=");
           DSerial.print(fp_corr);
@@ -669,6 +659,10 @@ void loop(void)
         int ret = get_compass();  // hier auch eine Mittelung ?
         if (ret !=0)  DSerial.println("Error with compass: " + String(ret));
 #endif       
+
+#ifdef USE_TEMP        
+//        getWeather(); // für WLAN Zugriff eigens aufrufen
+#endif
       }
       print_++;
   
@@ -678,11 +672,6 @@ void loop(void)
         // Fehlermeldung ausgeben
     }   
   } // !standby      
-
-#ifdef USE_TEMP        
-  if (modeT!=MODE_SLEEP)
-    getWeather(); // für WLAN Zugriff
-#endif
 
   //sensorValue = analogRead(ANALOGINPIN);  // Arduinofunktion
   // ESP32

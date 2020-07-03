@@ -27,7 +27,7 @@
 #define SHOW_KOMPASS    // nur für die Anzeige
 //#define USE_M5KOMPASS // den vom M5 Modul
 
-//#define USE_TEMP      // externer Temperatursensor
+#define USE_TEMP      // externer Temperatursensor
 //#define USE_DISPLAY   // evt. später noch Unterscheidung nach TFT von letzter Version oder M5Stack, erstmal ohne M5 den alten Code
 
 // manche Libs geben tft fix vor. Für unterschiedliche Libs daher immer tft_ im Source und mit #define auf das richtige umsetzen
