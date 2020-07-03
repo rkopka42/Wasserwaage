@@ -18,7 +18,7 @@
 // ? define für Serial.print ...   Makros mit . gehen nicht (?)
 #define DSerial  if (DSERIAL) Serial
 
-//#define DO_SLEEP  // Prozessor Sleep durchführen
+#define DO_SLEEP  // Prozessor Sleep durchführen
 #define DO_DEBUG  // show Debugdata on serial
 
 //#define USE_M5STACK   // nur dann die entsprechenden Sensoren erlauben, bzw. wählen, auch die includes

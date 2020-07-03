@@ -268,18 +268,19 @@ int get_compass()
   comp_x=((MsbX&0x0f)*256)+(LsbX); 
   comp_y=((MsbY&0x0f)*256)+(LsbY); 
 #endif
-  
+  /*
   DSerial.print(x);
   DSerial.print(", ");
   DSerial.print(y);
   DSerial.print(",  (" + String(confvalues.minX) + "," + String(confvalues.maxX) + "," + String(confvalues.minY) + "," + String(confvalues.maxY) +  ")  -> ");
+  */
   x = map(comp_x, confvalues.minX, confvalues.maxX, -180, 180); 
   y = map(comp_y, confvalues.minY, confvalues.maxY, -180, 180); 
-  DSerial.print(x);
+  /*DSerial.print(x);
   DSerial.print(", ");
   DSerial.print(y);
   DSerial.print(",  --> ");
-  
+  */
   //x = map(x, 1900, 2188, -180, 180); 
   //y = map(y, 1910, 2193, -180, 180); 
   mygrad = atan2(x, y)*180/3.1415927410; 
@@ -294,7 +295,6 @@ int get_compass()
   
   return 0;
 }
-
 
 #ifdef USE_TEMP
 //---------------------------------------------------------------

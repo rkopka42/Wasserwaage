@@ -405,10 +405,25 @@ void loop(void)
     if (modeT==MODE_SLEEP)
     {
         // AP aus
+        WiFi.mode(WIFI_OFF);
     }
     else if (modeT_old==MODE_SLEEP)
     {
-        // AP an
+      // AP an
+      WiFi.mode(WIFI_AP);           //Only Access point  
+      
+      // for ESP32
+      WiFi.softAP(confvalues.ssid.c_str(), confvalues.password.c_str());  //Start HOTspot removing password will disable security   Kanal ????
+      
+      IPAddress myIP = WiFi.softAPIP(); //Get IP address
+      DSerial.print("HotSpot IP:");
+      DSerial.println(myIP);
+      
+      DSerial.print("ssid:");
+      DSerial.print(confvalues.ssid);
+      DSerial.print("  Passwd:");
+      DSerial.print(confvalues.password);
+      DSerial.println("<");
     }
   }
     
@@ -801,8 +816,8 @@ void loop(void)
     
         DSerial.print(" S ");   
       }
-      else
-        flag_nosleep=false;
+   //   else
+     //   flag_nosleep=false;
 #else
     //delay(100);        
 #endif        
