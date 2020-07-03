@@ -309,35 +309,44 @@ void loop(void)
 
  // DSerial.print(" T=" + String(digitalRead(TASTER))+ " ");
 
-  if ( !digitalRead(TASTER))
+  if (modeT==MODE_SLEEP)
   {
-    if (!pressedT)  // neuer Druck
+    if ( !digitalRead(TASTER))
+      press_shortT = true;
+  }
+  else
+  {
+    if ( !digitalRead(TASTER))
     {
-      last_keyT=millis();
-      pressedT=true;
-    }
-    else  // schon länger gedrückt
-    {
-      if (time_T>KEYTIME_LONG)
+      if (!pressedT)  // neuer Druck
       {
-        press_long_activeT=true;
+        last_keyT=millis();
+        pressedT=true;
+      }
+      else  // schon länger gedrückt
+      {
+        if (time_T>KEYTIME_LONG)
+        {
+          press_long_activeT=true;
+        }
       }
     }
-  }
-  else    // not pressed
-  {
-    if (pressedT)  // es war vorher gedrückt
+    else    // not pressed
     {
-      if (time_T>KEYTIME_MIN and time_T<KEYTIME_SHORT)
-        press_shortT=true;
-      else if (time_T>KEYTIME_LONG)
-        press_longT=true;
+      if (pressedT)  // es war vorher gedrückt
+      {
+        if (time_T>KEYTIME_MIN and time_T<KEYTIME_SHORT)
+          press_shortT=true;
+        else if (time_T>KEYTIME_LONG)
+          press_longT=true;
+      }
+      else  // keine Taste auch vorher
+      {    
+      }
+      pressedT=false;
     }
-    else  // keine Taste auch vorher
-    {    
-    }
-    pressedT=false;
   }
+  
 
 //  DSerial.print(" Dplus=" + String(Dplus) + " modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
   int modeT_old = modeT;
@@ -376,13 +385,15 @@ void loop(void)
 
     case MODE_WLAN:      //  kein D+, durch Taste (wie geht das mit längerem Sleep ? Zeiten für pressed_long anschauen)  AP ein für 10min oder bis wieder Taste. Dann SLEEP
       if (Dplus)             modeT = MODE_NOCLIENT;
-      else if (press_shortT) modeT = MODE_SLEEP;
+      else if (press_shortT 
+            /*or press_longT*/)  modeT = MODE_SLEEP;
       else if (is10min)      modeT = MODE_SLEEP;
       break;       
       
     case MODE_SLEEP:     //  längerer Sleep, sonst nichts, auf Taste und D+ achten, dann NOCLIENT oder WLAN
       if (Dplus)             modeT = MODE_NOCLIENT;
-      else if (press_shortT) modeT = MODE_WLAN;
+      else if (press_shortT 
+            or press_longT)  modeT = MODE_WLAN;
       break;       
   
     default:  
