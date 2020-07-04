@@ -2,8 +2,8 @@
  * 
  */
 
-#define VERSION 9003  // Format v.ss.xxx wie in der Firma - keine führende 0!!
-#define VERSIONSTRING "0.09.003"  // automatisch generieren ?
+#define VERSION 9004  // Format v.ss.xxx wie in der Firma - keine führende 0!!
+#define VERSIONSTRING "0.09.004"  // automatisch generieren ?
 
 #define CFGFILE_NAME "/Wasserwaage.cfg"
 #define LOGFILE_NAME "/Wasserwaage.log"

@@ -6,7 +6,6 @@ void handleCalib()
 {
   bool        do_calib     =false;
   static bool calib_changed=false;  // erst nach Taste abspeichern
-//  digitalWrite(LICHT, HIGH);  
   
   String calib = server.arg("Calib");
   // Button Wert verwenden
@@ -55,9 +54,6 @@ void handleCalib()
   message.replace("STELLVERTRETER", werte);
   server.send(200, "text/html", message);
   DSerial.println("Root 200");
-  
- // delay(200);
-//  digitalWrite(LICHT, HIGH);
 }
 
 //String option_string;
@@ -77,8 +73,6 @@ void handleConfig()
   static bool  config_changed=false;  // erst nach Taste abspeichern
   bool         is_save=false;
   confvalues_t confvalues_old;
-
- // digitalWrite(LICHT, HIGH);  // wieso ?
     
   String config_ = server.arg("Config");
 
@@ -201,9 +195,6 @@ void handleConfig()
     
   server.send(200, "text/html", message);
   DSerial.println("Root 200");
-  
-  //delay(200);
-  //digitalWrite(LICHT, HIGH);
 }
 
 // return JS code for main canvas
@@ -217,6 +208,8 @@ void handleMain()
 void handleRoot() 
 {
   DSerial.println(" handle root");
+
+  //DSerial.println(server.client().remoteIP().toString()); // -> bestimmen, wer da was anfragt. server an Funktion übergeben
   
   do_calib=false;
    
@@ -259,12 +252,12 @@ void handleRoot()
     button_text = "<input class=\"button\" type=\"submit\" name=\"Fast\" id=\"Fast\" value=\"Fast\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
     
 
-  button_text +="<br>\n"  "<br>\n"  "<br>\n"
+  button_text +="<br>\n"  "<br>\n"
                   "<input class=\"button\" type=\"submit\" name=\"Config\" value=\"Config\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\" formaction=\"/config.html\">\n";
   button_text +="&ensp;"
                   "<input class=\"button\" type=\"submit\" name=\"Calib\" value=\"Calib\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\" formaction=\"/calib.html\">\n";
 #ifdef SHOW_KOMPASS
-  button_text += "<br>\n"  "<br>\n"  "<br>\n"
+  button_text += "<br>\n"  "<br>\n"
                  "<input class=\"button\" type=\"submit\" name=\"compass\" value=\"Compass\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\" formaction=\"/compass.html\">\n";
 #endif
   value_text = "dummy"; // Test 
@@ -302,7 +295,6 @@ var url = "/main.js";
 getScript1(url, function(){ paintmain();});
 }
   )====="; 
-
 
   if (modeT == MODE_FAST)
     message2+="reloadid = setInterval(loadJS,1000);\n";
@@ -353,17 +345,15 @@ void handleCompass()
 {
   bool config_changed=false; 
   
-  String cont = server.arg("Reload");
+  String cont = server.arg("Fast");
   // Button Wert verwenden
-  if (cont == "Fast" and /*do_refresh*/ modeT != MODE_FAST)
+  if (cont == "Fast" and modeT != MODE_FAST)
   {
-   // do_refresh=true;
     modeT = MODE_FAST;
     last_modeT_change = time(NULL);
   }
-  else if (cont == "Slow" and /*do_refresh*/ modeT == MODE_FAST)
+  else if (cont == "Slow" and modeT == MODE_FAST)
   {
-    //do_refresh=false;
     modeT = MODE_SLOW;
     last_modeT_change = time(NULL);
   }
@@ -378,14 +368,12 @@ void handleCompass()
     // bool is_calib   if not do_calib -> Button ändern, Startwerte  do_calib=true
     // irgendwas um beim ersten Mal die Werte auf Min Max zu setzen
     do_calib  =true;
-    //do_refresh=true;
     modeT = MODE_FAST;
     CmaxX=0; CminX=16000; CmaxY=0; CminY=16000;
   }
   else if (calib == "SaveCalib" and do_calib)
   {
     do_calib  =false;
-    //do_refresh=false;
     modeT = MODE_SLOW;
     // save calib Werte - oder noch eine Box wie bei config !?
 
@@ -408,7 +396,6 @@ void handleCompass()
   else if (calib == "AbortCalib" and do_calib)
   {
     do_calib  =false;
-    //do_refresh=false;
     modeT = MODE_SLOW;
   }
   
@@ -437,14 +424,14 @@ void handleCompass()
   )====="; 
 
   String button_text;
- 
-  if (/*do_refresh and modeT ==*/ modeT == MODE_FAST)
-    button_text = "<input class=\"button\" type=\"submit\" name=\"Reload\" value=\"Slow\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\"> ";
+
+  if (modeT == MODE_FAST)
+    button_text = "<input class=\"button\" type=\"submit\" name=\"Fast\" id=\"Fast\" value=\"Slow\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
   else  
-    button_text = "<input class=\"button\" type=\"submit\" name=\"Reload\" value=\"Fast\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\"> ";
-    
+    button_text = "<input class=\"button\" type=\"submit\" name=\"Fast\" id=\"Fast\" value=\"Fast\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\">";
+     
   button_text += "<br><br><input class=\"button\" type=\"submit\" name=\"home\" value=\"Home\" style=\"height: 60px; width: 90px; border: 3px solid black; border-radius: 10px;\" formaction=\"/\">\n";
-  button_text +="<br>\n"  "<br>\n"  "<br>\n";
+  button_text +="<br>\n" "<br>\n";
   
   if (do_calib)
   {
@@ -466,6 +453,9 @@ void handleCompass()
   </div>
   <script>  
 
+  var reloadid;
+  var but;
+  
 // mit callback
 "use strict";
 // src: https://stackoverflow.com/a/28002292
@@ -492,10 +482,10 @@ getScript1(url, function(){ paintcompass();});
   )====="; 
 
   if (modeT == MODE_FAST)
-    message2+="setInterval(loadJS,1000);\n";
+    message2+="reloadid = setInterval(loadJS,1000);\n";
   else
-    message2+="setInterval(loadJS,5000);\n";
-
+    message2+="reloadid = setInterval(loadJS,5000);\n";
+    
   String message4 = " </script>\n";  
   String end_text ="</body>\n </html>";                    
 

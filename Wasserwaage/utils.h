@@ -361,7 +361,7 @@ String draw_compass(int16_t x, int16_t y, int16_t radius, String farbe, float wi
 
   String bild;
   int farbe_ = BLAU;
-  draw_pic(bild, pfeil, sizeof(pfeil)/sizeof(xy), x, y,  -winkel, 1);  
+  draw_pic(bild, pfeil, sizeof(pfeil)/sizeof(xy), x, y,  winkel, 1);  
 
   return (message5 + message6 + message8 + farben[farbe_] + bild);
 }
@@ -607,7 +607,7 @@ void show_display(void)
 // set up html code for values
 void make_value_text(String &text)
 {
-  text ="<br>"  "<br>"
+  text ="<br>"  
                   "clients: " + String(nb) + "<br>";
 #ifdef SHOW_KOMPASS                  
   text +=         "Grad: " + String(mygrad,0) + "<br>";
@@ -623,7 +623,12 @@ void make_value_text(String &text)
   text +=         "Temp: " + String(tempC,1) + "C<br>"
                   "Humid:" + String(humidity,1) + "%<br>";
 #endif                             
- text +=          "Volt:"  + String(sensorValue/175.5, 2) + "V<br>";                  
+  text +=          "Volt:"  + String(sensorValue/175.5, 2) + "V<br>";        
+
+  if (modeT==MODE_NODPLUS or modeT==MODE_WLAN or modeT==MODE_NODPLUSFAST)
+  {
+    text +=  "<b>" + String( MODETIMEOUT - (time(NULL) - last_modeT_change) ) + "s bis Sleep</b>"; 
+  }
 }
 
 // set up JS code for painting the canvas
@@ -731,6 +736,22 @@ void paint_compass(String &message)
   String values;
   make_value_text(values);
   message += "document.getElementById(\"value_text\").innerHTML = \"" + values + "\";\n "; 
+  
+  message += reloadstring;  // Interval umstellen
+
+  if (reloadstring!="")
+  {
+    if (modeT == MODE_FAST)
+    {
+      message += "but=document.getElementById(\"Fast\");\n but.value = \"Slow\";\n ";       
+    }
+    else
+    {
+      message += "but=document.getElementById(\"Fast\");\n but.value= \"Fast\";\n "; 
+    } 
+  }
+  reloadstring="";
+  
   message += "}\n";  
 }
 #endif
