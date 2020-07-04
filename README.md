@@ -20,7 +20,7 @@ Temperatur und Gyro haben eigene Kalibrierungsmodi. Beide Sensore benötigen ein
 
 Der M5 Kompaß ist kaum brauchbar, da durch die Magnete im Gehäuse beeinträchtigt. Ein Kompaßmodul ist nur eingeschränkt nutzbar, da die Anzeige recht einfach ist und das Tablet ohne Umstellungen den Bildschirm nach einiger Zeit abschaltet. Der Temperatursensor muß vom Prozessor entfernt sein (Wärme). Da das Gerät während der Fahrt und bei mir während der Aufbau eingeschaltet ist, ständig in Betrieb ist, wird es recht warm. Andererseits will man ja sofort darauf zugreifen können.
 
-Temperatursensor und Kompaß werden an den I2C Bus angeschlossen. Die Betriebsspannung wird über ADC1 Channel6 (ESP32) gelesen. Eigentlich sollte das D+ Signal eingelesen werden und für das Abschalten benutzt werden, ist aber noch nicht implementiert. Mit Start des Motor sollte das Gerät aktiv werden und nach dem Stop noch einige Zeit weiter aktiv bleiben. Danach würde es im Sleep warten.
+Temperatursensor und Kompaß werden an den I2C Bus angeschlossen. Das D+ Signal wird über ADC1 Channel6 (ESP32) eingelesen und für das Abschalten benutzt. Mit Start des Motor wird das Gerät aktiv und nach dem Stop noch einige Zeit weiter aktiv bleiben. Danach wird es im Sleep warten. Ohne Motor kann man es mit einem Taster aufwecken, z.B. um Einstellungen zu ändern. Weitere Spannungen könnte man auch noch einlesen, da es genug ADC Eingänge gibt.
 
 Die SW ist mit/für die Arduino IDE geschrieben mit der ESP32 Erweiterung und folgenden Bibliotheken:
 
@@ -56,7 +56,6 @@ Das Bild ganz oben stammt von einer frühen Version, wo die Winkel noch nicht ko
 ----
 
 Weitere Pläne:
-- D+ und einen Taster nutzen, um WLAN und schnelle Messungen zu (de)aktivieren
 - Temperatursensor auf Abstand (keine SW)
 - Schnittstelle (Webadresse AP) zum Auslesen von Werten (D+,Temp...) durch andere WLAN Geräte im Womo, die diese Infos brauchen, aber nicht selber ermitteln können/wollen.
 
