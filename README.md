@@ -11,9 +11,9 @@ Außer einem mit Arduino programmierten ESP32-Modul wird fast nichts benötigt. 
 
 Die Ausgabe erfolgt über einen WLAN AP und eine Website, in der mit Javascript Canvas das Bild gezeichnet wird. Die Aktualisierung der Seite erfolgt mit Javascript, das ein neues Canvas nachlädt und anzeigt. Auf einer eigenen Seite kann man die Einstellungen ändern und die Sensoren kalibirieren. Die Anzeige ist für meine Android Geräte beginnend mit 800-1000 Pixel Breite ausgelegt.
 
-Eine frühere Version hat die Ausgabe auf ein TFT gemacht. Das wurde jetzt für ein M5Stack Modul hinzugefügt. Ebenso eine Anpassung des M5Stack Gyro Sensors. Man hat dann sowohl eine Ausgabe auf dem M5Stack Modul, als auch über WLAN. Die TFT Grafik benutzt sehr simple Pixelgrafiken, die die Drehung nur über wenige unterschiedliche Bilder darstellen.
+Eine frühere Version hat die Ausgabe auf ein TFT gemacht. Das wurde jetzt für ein M5Stack Modul hinzugefügt. Ebenso eine Anpassung des M5Stack Gyro Sensors. Man hat dann sowohl eine Ausgabe auf dem M5Stack Modul, als auch über WLAN. Die TFT Grafik benutzt sehr simple Pixelgrafiken, die die Drehung nur über wenige unterschiedliche Bilder darstellen. Eine noch frühere Version hat die Ausgabe auf einem Scharzweiß Display mit noch weniger Auflösung gemacht. Damals noch mit einem Arduino Nano.
 
-Die verschiedenen Optionen werden in defines.h eingestellt.
+Die verschiedenen Optionen werden in defines.h eingestellt. Eine Version für eine einfache Hardware mit TFT und AVR Arduino wäre wohl möglich mit genug defines, aber derzeit nicht unterstützt. Auch könnte dann der Speicher knapp werden, da die ESPs reichlich haben und nicht gespart wurde.
 
 Ein Temperatursensor wird ausgelesen und die Werte auf der Hauptseite angezeigt. Ein Kompaßmodul wird für eine Anzeige auf einer eigenen Seite verwendet.
 Temperatur und Gyro haben eigene Kalibrierungsmodi. Beide Sensore benötigen einige Grundeinstellungen bzgl. Fahrzeug und eine Kalibrierung in der Ebene (Gyro), bzw. durch einen 360° Kreis (Kompaß). Die Orientierung des Sensors und eine evt. Verdrehung müssen manuell eingestellt werden.
@@ -56,7 +56,9 @@ Das Bild ganz oben stammt von einer frühen Version, wo die Winkel noch nicht ko
 ----
 
 Weitere Pläne:
-- Temperatursensor auf Abstand (keine SW)
-- Schnittstelle (Webadresse AP) zum Auslesen von Werten (D+,Temp...) durch andere WLAN Geräte im Womo, die diese Infos brauchen, aber nicht selber ermitteln können/wollen.
+- Temperatursensor auf Abstand (keine SW). Verkabelt ist er. Jetzt brauche ich noch ein sehr kleines Gehäuse (wohl im 3D-Druck).
+- Schnittstelle (Webadresse AP) zum Auslesen von Werten (D+,Temp,Kompaß...) durch andere WLAN Geräte im Womo, die diese Infos brauchen, aber nicht selber ermitteln können/wollen. Dann muß man aber evt. am Sleep etwas ändern. Umgekehrt wäre auch die Darstellung weiterer Werte auf der GUI möglich, wenn die Geräte sich als Client einloggen.
+- TFT Grafik aus den Canvas Vektoren ermitteln. Damit wären die Bilder schöner und es gäbe mehr Winkelauflösung. Auch Änderungen wären einfacher. Für M5 soll sich auch die Aufteilung ändern, da das TFT breiter ist als das frühere Display.
+- mehr ein Gimmick - am Kompaß ein Pfeil zum Astra Satelliten zur Ausrichtung.
 
 
