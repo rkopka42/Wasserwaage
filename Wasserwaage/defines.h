@@ -2,8 +2,8 @@
  * 
  */
 
-#define VERSION 9004  // Format v.ss.xxx wie in der Firma - keine führende 0!!
-#define VERSIONSTRING "0.09.004"  // automatisch generieren ?
+#define VERSION 9005  // Format v.ss.xxx wie in der Firma - keine führende 0!!
+#define VERSIONSTRING "0.09.005"  // automatisch generieren ?
 
 #define CFGFILE_NAME "/Wasserwaage.cfg"
 #define LOGFILE_NAME "/Wasserwaage.log"
@@ -18,17 +18,17 @@
 // ? define für Serial.print ...   Makros mit . gehen nicht (?)
 #define DSerial  if (DSERIAL) Serial
 
-#define DO_SLEEP  // Prozessor Sleep durchführen
+//#define DO_SLEEP  // Prozessor Sleep durchführen
 #define DO_DEBUG  // show Debugdata on serial
 
-//#define USE_M5STACK   // nur dann die entsprechenden Sensoren erlauben, bzw. wählen, auch die includes
+#define USE_M5STACK   // nur dann die entsprechenden Sensoren erlauben, bzw. wählen, auch die includes
 
-#define USE_KOMPASS   // externer Kompaßsensor
+//#define USE_KOMPASS   // externer Kompaßsensor
 #define SHOW_KOMPASS    // nur für die Anzeige
-//#define USE_M5KOMPASS // den vom M5 Modul
+#define USE_M5KOMPASS // den vom M5 Modul
 
-#define USE_TEMP      // externer Temperatursensor
-//#define USE_DISPLAY   // evt. später noch Unterscheidung nach TFT von letzter Version oder M5Stack, erstmal ohne M5 den alten Code
+//#define USE_TEMP      // externer Temperatursensor
+#define USE_DISPLAY   // evt. später noch Unterscheidung nach TFT von letzter Version oder M5Stack, erstmal ohne M5 den alten Code
 
 // manche Libs geben tft fix vor. Für unterschiedliche Libs daher immer tft_ im Source und mit #define auf das richtige umsetzen
 #ifdef USE_M5STACK
@@ -56,7 +56,7 @@
 #define TFT_DC         9
 
 #ifdef USE_M5STACK
- #define CAL_KEY 37  // ButtonC M5STACK für Kalibrierung
+ #define CAL_KEY 37  // ButtonC M5STACK für Kalibrierung Mitte ?
  #define LICHT   15  // LED, die den Zustand zeigt: Standby, connected...  GPIO15 für M5Stack ???
 #else
  #define LICHT   13  // LED, die den Zustand zeigt: Standby, connected...  
@@ -122,35 +122,42 @@
 // Werte für Displays x,y,w,h
 #ifdef USE_M5STACK
 // 320x240
+
 #define WIDTH_BALKEN 15
 #define HEIGHT_BALKEN 75    // Balkenhöhe am Display -> nicht ändern
 
-#define TEXTMITTEOBENX 80
-#define TEXTRECHTSX 132
+#define TEXTMITTEOBENX 120
+#define TEXTRECHTSX 275 //132
 #define TEXTUNTENY 213
-#define VALUEOBENY 102
-#define VALUEUNTENY 205
-#define VALUERECHTSX 169 
+#define VALUEOBENY 105  // 102
+#define VALUEUNTENY 205 // war 205
+#define VALUERECHTSX 293 //169 
 
 //#define BITMAPOBENX 67  // Faktor 1 1
 //#define BITMAPOBENY 30
-#define BITMAPOBENX 50    // Faktor 2 2
+#define BITMAPOBENX 120 //50    // Faktor 2 2
 #define BITMAPOBENY 21
+#define VECTOROBENX 155 //50    // Faktor 2 2
+#define VECTOROBENY 43
 
 //#define BITMAPUNTENX 78
 //#define BITMAPUNTENY 120 
-#define BITMAPUNTENX 62   // Faktor 2 2
-#define BITMAPUNTENY 108 
+#define BITMAPUNTENX 132 //62   // Faktor 2 2
+#define BITMAPUNTENY 118 
+#define VECTORUNTENX 160 //62   // Faktor 2 2
+#define VECTORUNTENY 145 
 
 #define BITMAPOBENW 40
 #define BITMAPOBENH 30
 #define BITMAPUNTENW 32
 #define BITMAPUNTENH 30 
-#define ANGLEX 61
+#define ANGLEX 131 // 61
 #define ANGLEOBENY 81
-#define ANGLEUNTENY 174
+#define ANGLEUNTENY 194
+
 #else
 // 128x160 TFT 1,8"
+
 #define WIDTH_BALKEN 10
 #define HEIGHT_BALKEN 50    // Balkenhöhe am Display -> nicht ändern
 

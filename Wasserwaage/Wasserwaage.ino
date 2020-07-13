@@ -7,10 +7,10 @@
  *           27.06.2020 rKop  compiliert auch für externes TFT (kein M5STACK)
  *           28.06.2020 rKop  MODE eingeführt - Spannung und Sleep
  *  0.09.004 04.07.2020 rKop  Anzeige vor Sleep, FAST auch bei Kompaß, Taste für WLAN, AP wieder einschalten, Temp Messung besser, CFG korrigiert
- *           
- *  TODO
+ *  0.09.005 13.07.2020? rKop  M5Stack Grafik angepaßt und Vektor
  *  
- *  - TFT Grafiken an M5 angepaßt, etwas größer und mehr, evt. aus Vektor errechnet      
+ *  TODO
+ *       
  *  - noch mehr cfg und calib ? Schwerkraft bei Config zumindest anzeigen.
  *  
  *  Höhe 700x480 -> 700(?) x 390 -> paßt für Pumpkin, noch Platz rechts

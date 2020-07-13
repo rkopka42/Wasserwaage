@@ -500,10 +500,46 @@ void draw_Bitmap_faktor(int16_t x, int16_t y,
   }
 }
 
+// Erste Linie unsichtbar !!!
+void draw_vector(xy *form, int punkte, int x, int y, float angle=0, float factor=1, uint16_t color=ST77XX_WHITE)
+{ 
+ int n;//=0;
+ float lastx, lasty;
+ float nextx, nexty;
+
+// fillRect_      (x-50 , y-43, 100 ,88, ST77XX_BLACK);  //oder den alten mit sw ? dann muß man den aber merken
+ // erstmal maximale Werte errechnen: einfach wie unten, aber nur max bestimmen
+ 
+ lastx = x + form[0].x; // Startpunkt + erster Vektor
+ lasty = y + form[0].y;
+
+ for (n=1; n<punkte; n++)
+ {
+    //DSerial.print("N="+String(n)+ " ");
+    nextx = lastx + form[n].x*factor * cos(angle*PI/180) - form[n].y*factor * sin(angle*PI/180);
+    nexty = lasty + form[n].x*factor * sin(angle*PI/180) + form[n].y*factor * cos(angle*PI/180);
+
+    if (n<=1)
+    {
+     //  tft_.drawLine(xpos, ypos-strich, xpos+breite-1, ypos-strich, color); 
+      //s+= "ctx.moveTo(" + String(int(nextx)) +", "+ String(int(nexty)) +");\n";
+    }
+    else
+    {
+      tft_.drawLine(lastx, lasty, nextx, nexty, color); 
+      
+      //s+= "ctx.lineTo(" + String(int(nextx)) +", "+ String(int(nexty)) +");\n";
+    }
+    lastx = nextx;
+    lasty = nexty;
+ }
+}
+
 void show_display(void)
 {
   char buf[10];
   tft_.setTextSize(2);            
+  static float last_fp_corr=0, last_fr_corr=0;
   
   get_height(buf, int(z1), MAX_SHOW,true);
   tft_.setCursor(0,0);
@@ -568,8 +604,14 @@ void show_display(void)
     color=ST77XX_GREEN;
   }
     
-  draw_Bitmap_faktor(BITMAPOBENX, BITMAPOBENY, p_map, BITMAPOBENW, BITMAPOBENH, 2,2, false, color);          
-   
+  //draw_Bitmap_faktor(BITMAPOBENX, BITMAPOBENY, p_map, BITMAPOBENW, BITMAPOBENH, 2,2, false, color);       
+  if (last_fp_corr!=fp_corr)
+  {   
+    draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, (float)int(-last_fp_corr*5), 0.7, ST77XX_BLACK);
+    draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, (float)int(-fp_corr*5), 0.7, color);
+    last_fp_corr=fp_corr;
+  }
+  
   if (fr_corr >=3 or fr_corr <=-3)
   {
     p_map = Auto3_10f;
@@ -587,11 +629,19 @@ void show_display(void)
   }
     
   bool mirror_=(int(fr_corr) >0);  // int gegen Flackern
-
+/*
   if (!mirror_)
     draw_Bitmap_faktor(BITMAPUNTENX, BITMAPUNTENY, p_map, BITMAPUNTENW, BITMAPUNTENH, 2,2, mirror_, color);          
   else
     draw_Bitmap_faktor(BITMAPUNTENX+22, BITMAPUNTENY, p_map, BITMAPUNTENW, BITMAPUNTENH, 2,2, mirror_, color);          
+    */
+  //draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, (float)int(-last_fp_corr*5), 0.7, ST77XX_BLACK);  
+  if (last_fr_corr!=fr_corr)
+  {   
+    draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, (float)int(last_fr_corr*5), 1, ST77XX_BLACK);
+    draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, (float)int(fr_corr*5), 1, color);
+    last_fr_corr=fr_corr;
+  }
   
   tft_.setCursor(ANGLEX,ANGLEOBENY);
   get_angle(buf, fp_corr);
