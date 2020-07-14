@@ -527,6 +527,7 @@ void draw_vector(xy *form, int punkte, int x, int y, float angle=0, float factor
     else
     {
       tft_.drawLine(lastx, lasty, nextx, nexty, color); 
+      DSerial.println(String(n) + ": x=" + String(lastx) + " y=" +String(lasty)+ " -> x=" + String(nextx) + " y=" +String(nexty));
       
       //s+= "ctx.lineTo(" + String(int(nextx)) +", "+ String(int(nexty)) +");\n";
     }
@@ -603,15 +604,44 @@ void show_display(void)
     p_map = Auto2_00f;
     color=ST77XX_GREEN;
   }
+
+// Winkel multiplizieren, aber auch begrenzen - gibts in der Realität nicht, aber trotzdem min max ?
     
   //draw_Bitmap_faktor(BITMAPOBENX, BITMAPOBENY, p_map, BITMAPOBENW, BITMAPOBENH, 2,2, false, color);       
   if (last_fp_corr!=fp_corr)
   {   
-    draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, (float)int(-last_fp_corr*5), 0.7, ST77XX_BLACK);
-    draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, (float)int(-fp_corr*5), 0.7, color);
+ //   draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, min((float)int(-last_fp_corr*5), (float)45), 0.7, ST77XX_BLACK);
+  //  draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, min((float)int(-fp_corr*5),(float)45), 0.7, color);
     last_fp_corr=fp_corr;
   }
   
+  static bool first=true;
+  if (first)
+  {
+  int n;
+  int cnt=sizeof(seite_)/sizeof(Point);
+  
+    int startx=100; int starty=130; float faktor=1;
+   // for (int n=0;n<sizeof(seite_)/sizeof(Point);n++)
+    for (n=0;n<cnt;n++) // 18
+    {
+      seite_[n].x = seite[n].x * faktor + startx;
+      startx = seite_[n].x ;
+      seite_[n].y = seite[n].y * faktor + starty;
+      starty = seite_[n].y ;
+      DSerial.println(String(n) + ": x=" + String(seite_[n].x) + " y="+String(seite_[n].y));
+    }
+    seite_[n].x=100;
+    seite_[n].y=130;
+      
+    scan_line_fill(/* sizeof(seite_)/sizeof(Point)*/ cnt+1, seite_);
+    first=false;
+
+     seite[n].x=0;
+  seite[n].y=0;
+    draw_vector(seite, /*sizeof(seite)/sizeof(xy)*/ cnt , 100 ,130, 0, faktor, ST77XX_BLUE);
+  }
+   
   if (fr_corr >=3 or fr_corr <=-3)
   {
     p_map = Auto3_10f;
@@ -636,13 +666,22 @@ void show_display(void)
     draw_Bitmap_faktor(BITMAPUNTENX+22, BITMAPUNTENY, p_map, BITMAPUNTENW, BITMAPUNTENH, 2,2, mirror_, color);          
     */
   //draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, (float)int(-last_fp_corr*5), 0.7, ST77XX_BLACK);  
+  /*
   if (last_fr_corr!=fr_corr)
   {   
-    draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, (float)int(last_fr_corr*5), 1, ST77XX_BLACK);
-    draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, (float)int(fr_corr*5), 1, color);
+    if (mirror_)
+    {
+      draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, min((float)int(last_fr_corr*5),(float)45.0), 1, ST77XX_BLACK);
+      draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, min((float)int(fr_corr*5),(float)45.0), 1, color);
+    }
+    else
+     {
+      draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, max((float)int(last_fr_corr*5),(float)-45.0), 1, ST77XX_BLACK);
+      draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, max((float)int(fr_corr*5),(float)-45.0), 1, color);
+    }  
     last_fr_corr=fr_corr;
   }
-  
+  */
   tft_.setCursor(ANGLEX,ANGLEOBENY);
   get_angle(buf, fp_corr);
   tft_.print(buf);

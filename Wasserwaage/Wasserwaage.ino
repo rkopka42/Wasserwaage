@@ -55,6 +55,8 @@
 
 #endif
 
+#include "grafic_funcs.h"
+
 WebServer server(80); //Server on port 80
 
 #ifdef USE_TEMP
@@ -281,7 +283,8 @@ void setup(void)
 #endif
 
 #ifdef USE_DISPLAY
-  delay(3000);
+ // delay(3000);
+ delay(1000);
   tft_.fillScreen(BLACK);
 #endif  
 }
