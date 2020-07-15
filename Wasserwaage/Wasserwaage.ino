@@ -303,6 +303,7 @@ void loop(void)
   long        time_T        =millis()-last_keyT; // Zeit gedrückt
   bool        press_shortT  =false, press_long_activeT=false, press_longT=false;
   time_t tt;
+  int modeT_old;
   
   server.handleClient();          //Handle client requests
 
@@ -314,6 +315,10 @@ void loop(void)
 
  // DSerial.print(" T=" + String(digitalRead(TASTER))+ " ");
 
+#ifdef USE_M5STACK
+  pressedT=false;
+  modeT_old = modeT = MODE_FAST;
+#else
   if (modeT==MODE_SLEEP)  // Zeitmessung macht hier keinen Sinn
   {
     if ( !digitalRead(TASTER))
@@ -351,9 +356,9 @@ void loop(void)
       pressedT=false;
     }
   }
-  
+
 //  DSerial.print(" Dplus=" + String(Dplus) + " modeT=" + String(modeT) + " deltaT=" + String(time(NULL) - last_modeT_change) + "  "); 
-  int modeT_old = modeT;
+  modeT_old = modeT;
   bool is10min =  last_modeT_change + MODETIMEOUT < tt;
   switch (modeT)
   {
@@ -403,6 +408,7 @@ void loop(void)
       modeT = MODE_SLEEP;
       break;       
   }
+#endif 
   
   if (modeT != modeT_old)
   {
@@ -477,6 +483,8 @@ void loop(void)
     }
     pressed=false;
   }
+
+  //Bei Calib und poly fill gibt es einen Sprung und es wird nicht gelöscht
   
   if (press_long_active)    // anders, bei Erreichen Flag setzen, das bearbeitet wird und dann gesperrt bis !pressed
   {
