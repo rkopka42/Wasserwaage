@@ -536,66 +536,30 @@ void draw_vector(xy *form, int punkte, int x, int y, float angle=0, float factor
  }
 }
 
-// Erste Linie unsichtbar !!!
 void draw_vector_fill(xy *form, int punkte, int x, int y, float angle=0, float factor=1, uint16_t color=ST77XX_WHITE)
 { 
- int n;//=0;
- float lastx, lasty;
- float nextx, nexty;
+  int n;
+  float lastx, lasty;
+  float nextx, nexty;
 
-// fillRect_      (x-50 , y-43, 100 ,88, ST77XX_BLACK);  //oder den alten mit sw ? dann muß man den aber merken
- // erstmal maximale Werte errechnen: einfach wie unten, aber nur max bestimmen
- 
-seite_[0].x = lastx = x + form[0].x; // Startpunkt + erster Vektor
-seite_[0].y = lasty = y + form[0].y;
+  Point seite_[punkte+1];
 
- for (n=1; n<punkte; n++)
- {
+  seite_[0].x = lastx = x + form[0].x; // Startpunkt + erster Vektor
+  seite_[0].y = lasty = y + form[0].y;
+
+  for (n=1; n<punkte; n++)
+  {
     //DSerial.print("N="+String(n)+ " ");
-seite_[n].x =    nextx = lastx + form[n].x*factor * cos(angle*PI/180) - form[n].y*factor * sin(angle*PI/180);
-seite_[n].y =    nexty = lasty + form[n].x*factor * sin(angle*PI/180) + form[n].y*factor * cos(angle*PI/180);
-
-    if (n<=1)
-    {
-     //  tft_.drawLine(xpos, ypos-strich, xpos+breite-1, ypos-strich, color); 
-      //s+= "ctx.moveTo(" + String(int(nextx)) +", "+ String(int(nexty)) +");\n";
-    }
-    else
-    {
-   //   tft_.drawLine(lastx, lasty, nextx, nexty, color); 
-   //   DSerial.println(String(n) + ": x=" + String(lastx) + " y=" +String(lasty)+ " -> x=" + String(nextx) + " y=" +String(nexty));
-      
-      //s+= "ctx.lineTo(" + String(int(nextx)) +", "+ String(int(nexty)) +");\n";
-    }
+    seite_[n].x =    nextx = lastx + form[n].x*factor * cos(angle*PI/180) - form[n].y*factor * sin(angle*PI/180);
+    seite_[n].y =    nexty = lasty + form[n].x*factor * sin(angle*PI/180) + form[n].y*factor * cos(angle*PI/180);
     lastx = nextx;
     lasty = nexty;
- }
-/*
-  int n;
-  int cnt=sizeof(seite_)/sizeof(Point);
+  }
+  //seite_[n].x=seite_[0].x;
+  //seite_[n].y=seite_[0].y;
+  seite_[n]=seite_[0];
   
-    int startx=100; int starty=130; float faktor=1;
-   // for (int n=0;n<sizeof(seite_)/sizeof(Point);n++)
-    for (n=0;n<cnt;n++) // 18
-    {
-      seite_[n].x = seite[n].x * faktor + startx;
-      startx = seite_[n].x ;
-      seite_[n].y = seite[n].y * faktor + starty;
-      starty = seite_[n].y ;
-      DSerial.println(String(n) + ": x=" + String(seite_[n].x) + " y="+String(seite_[n].y));
-    }
-    */
-    seite_[n].x=seite_[0].x;
-    seite_[n].y=seite_[0].y;
-      
-    scan_line_fill(/* sizeof(seite_)/sizeof(Point)*/ punkte+1, seite_, color);
-  //  first=false;
-
-     //seite[n].x=0;
-  //seite[n].y=0;
-    //draw_vector(seite, /*sizeof(seite)/sizeof(xy)*/ cnt , 100 ,130, 0, faktor, ST77XX_BLUE);
-
- 
+  scan_line_fill( punkte+1, seite_, color);
 }
 
 void show_display(void)
@@ -604,7 +568,7 @@ void show_display(void)
   tft_.setTextSize(2);            
   static float last_fp_corr=0, last_fr_corr=0;
   
-  get_height(buf, int(z1), MAX_SHOW,true);
+  get_height(buf, int(z4), MAX_SHOW,true);
   tft_.setCursor(0,0);
   tft_.print(buf);
   
@@ -616,26 +580,26 @@ void show_display(void)
     strcpy(buf,"   ");
   tft_.setTextColor(ST77XX_BLUE,ST77XX_BLACK); 
   tft_.setCursor(TEXTMITTEOBENX,0);
-  tft_.print(buf);
+  tft_.print(buf);  // Hier nur, wenn zuletzt etwas drin stand, sonst überschreibt es die Grafik
   
-  get_height(buf, int(z4), MAX_SHOW,false);
+  get_height(buf, int(z1), MAX_SHOW,false);
   tft_.setTextColor(ST77XX_WHITE,ST77XX_BLACK);           
   tft_.setCursor(TEXTRECHTSX,0);
   tft_.print(buf);
   
-  get_height(buf, int(z2), MAX_SHOW,true);
+  get_height(buf, int(z3), MAX_SHOW,true);
   tft_.setCursor(0,TEXTUNTENY);
   tft_.print(buf);
   
-  get_height(buf, int(z3), MAX_SHOW,false);      
+  get_height(buf, int(z2), MAX_SHOW,false);      
   tft_.setCursor(TEXTRECHTSX,TEXTUNTENY);
   tft_.print(buf);
           
   // void draw_value_v3(int xpos,int ypos, float value, float max_value, int max_height, int breite, strich)
-  draw_value_v3_(00 ,VALUEOBENY , z1, MAX_VALUE, HEIGHT_BALKEN, WIDTH_BALKEN, keilhoehe);
-  draw_value_v3_(00 ,VALUEUNTENY, z2, MAX_VALUE, HEIGHT_BALKEN, WIDTH_BALKEN, keilhoehe);
-  draw_value_v3_(VALUERECHTSX,VALUEOBENY , z4, MAX_VALUE, HEIGHT_BALKEN, WIDTH_BALKEN, keilhoehe);
-  draw_value_v3_(VALUERECHTSX,VALUEUNTENY, z3, MAX_VALUE, HEIGHT_BALKEN, WIDTH_BALKEN, keilhoehe);
+  draw_value_v3_(00 ,VALUEOBENY , /*z1*/ z4, MAX_VALUE, HEIGHT_BALKEN, WIDTH_BALKEN, keilhoehe);
+  draw_value_v3_(VALUERECHTSX,VALUEOBENY , /*z4*/z1, MAX_VALUE, HEIGHT_BALKEN, WIDTH_BALKEN, keilhoehe);
+  draw_value_v3_(00 ,VALUEUNTENY, /*z2*/z3, MAX_VALUE, HEIGHT_BALKEN, WIDTH_BALKEN, keilhoehe);
+  draw_value_v3_(VALUERECHTSX,VALUEUNTENY, /*z3*/ z2, MAX_VALUE, HEIGHT_BALKEN, WIDTH_BALKEN, keilhoehe);
   
   // Zeiger über Feld ? Dann ein Aufruf
   const uint8_t *p_map;
@@ -667,50 +631,35 @@ void show_display(void)
     color=ST77XX_GREEN;
   }
 
+  bool mirror_=(int(fp_corr) >0);  // int gegen Flackern
+  
 // Winkel multiplizieren, aber auch begrenzen - gibts in der Realität nicht, aber trotzdem min max ?
-  float last_fp_corr_ = min((float)int(-last_fp_corr*5), (float)45);
-  float fp_corr_ = min((float)int(-fp_corr*5),(float)45);
-    
+  static float last_fp_corr_;
+  float fp_corr_;
+
+  if (mirror_)
+  {
+    fp_corr_ = min((float)int(fp_corr*5),(float)45.0);
+  }
+  else
+  {
+    fp_corr_ = max((float)int(fp_corr*5),(float)-45.0);
+  }
+      
   //draw_Bitmap_faktor(BITMAPOBENX, BITMAPOBENY, p_map, BITMAPOBENW, BITMAPOBENH, 2,2, false, color);       
-  //if (last_fp_corr!=fp_corr)  // float, also abs() und Schwelle dazu
+  
   if ( abs(last_fp_corr_-fp_corr_)>0.1 )  // float, also abs() und Schwelle dazu
   {   
- //   draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, min((float)int(-last_fp_corr*5), (float)45), 0.7, ST77XX_BLACK);
+  //  draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, min((float)int(-last_fp_corr*5), (float)45), 0.7, ST77XX_BLACK);
   //  draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, min((float)int(-fp_corr*5),(float)45), 0.7, color);
-    draw_vector_fill(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, last_fp_corr_, 0.7, ST77XX_BLACK);
-    draw_vector_fill(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, fp_corr_, 0.7, color);
+    draw_vector_fill(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, -last_fp_corr_, FAKTOR_OBEN, ST77XX_BLACK);
+    draw_vector_fill(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, -fp_corr_, FAKTOR_OBEN, color);
  
-    last_fp_corr=fp_corr;
+    //last_fp_corr=fp_corr;
+    last_fp_corr_=fp_corr_;
   }
-  
-  static bool first=true;
- //if (first)
- if (0)
-  {
-  int n;
-  int cnt=sizeof(seite_)/sizeof(Point);
-  
-    int startx=100; int starty=130; float faktor=1;
-   // for (int n=0;n<sizeof(seite_)/sizeof(Point);n++)
-    for (n=0;n<cnt;n++) // 18
-    {
-      seite_[n].x = seite[n].x * faktor + startx;
-      startx = seite_[n].x ;
-      seite_[n].y = seite[n].y * faktor + starty;
-      starty = seite_[n].y ;
-      DSerial.println(String(n) + ": x=" + String(seite_[n].x) + " y="+String(seite_[n].y));
-    }
-    seite_[n].x=100;
-    seite_[n].y=130;
-      
-    scan_line_fill(/* sizeof(seite_)/sizeof(Point)*/ cnt+1, seite_);
-    first=false;
 
-     seite[n].x=0;
-  seite[n].y=0;
-    //draw_vector(seite, /*sizeof(seite)/sizeof(xy)*/ cnt , 100 ,130, 0, faktor, ST77XX_BLUE);
-  }
-   
+  // Bitmap nicht mehr nötig, aber Farben
   if (fr_corr >=3 or fr_corr <=-3)
   {
     p_map = Auto3_10f;
@@ -727,57 +676,44 @@ void show_display(void)
     color=ST77XX_GREEN;
   }
     
-  bool mirror_=(int(fr_corr) >0);  // int gegen Flackern
+  mirror_=(int(fr_corr) >0);  // int gegen Flackern
 /*
   if (!mirror_)
     draw_Bitmap_faktor(BITMAPUNTENX, BITMAPUNTENY, p_map, BITMAPUNTENW, BITMAPUNTENH, 2,2, mirror_, color);          
   else
     draw_Bitmap_faktor(BITMAPUNTENX+22, BITMAPUNTENY, p_map, BITMAPUNTENW, BITMAPUNTENH, 2,2, mirror_, color);          
-    */
-  //draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, (float)int(-last_fp_corr*5), 0.7, ST77XX_BLACK);  
+*/
+  //draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, (float)int(-last_fp_corr*5), 1, ST77XX_BLACK);  
 
-  float last_fr_corr_;
+  static float last_fr_corr_;
   float fr_corr_;
 
   if (mirror_)
   {
-    last_fr_corr_ = min((float)int(last_fr_corr*5),(float)45.0);
     fr_corr_ = min((float)int(fr_corr*5),(float)45.0);
   }
   else
   {
-    last_fr_corr_ = max((float)int(last_fr_corr*5),(float)-45.0);
     fr_corr_ = max((float)int(fr_corr*5),(float)-45.0);
   }
   
-  //if (last_fr_corr!=fr_corr)
   if ( abs(last_fr_corr_-fr_corr_)>0.1 )  // float, also abs() und Schwelle dazu
   {   
- //   if (mirror_)
- if (1)
-    {
-  //    draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, min((float)int(last_fr_corr*5),(float)45.0), 1, ST77XX_BLACK);
+    //  draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, min((float)int(last_fr_corr*5),(float)45.0), 1, ST77XX_BLACK);
     //  draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, min((float)int(fr_corr*5),(float)45.0), 1, color);
-      draw_vector_fill(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, last_fr_corr_, 1, ST77XX_BLACK);
-      draw_vector_fill(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, fr_corr_, 1, color);
-    }
-    else
-     {
-      //draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, max((float)int(last_fr_corr*5),(float)-45.0), 1, ST77XX_BLACK);
-      //draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, max((float)int(fr_corr*5),(float)-45.0), 1, color);
-      draw_vector_fill(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, last_fr_corr_, 1, ST77XX_BLACK);
-      draw_vector_fill(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, fr_corr_, 1, color);
-    }  
-    last_fr_corr=fr_corr;
+    draw_vector_fill(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, last_fr_corr_, FAKTOR_UNTEN, ST77XX_BLACK);
+    draw_vector_fill(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, fr_corr_, FAKTOR_UNTEN, color);
+   // last_fr_corr=fr_corr;
+    last_fr_corr_=fr_corr_;
   }
   
   tft_.setCursor(ANGLEX,ANGLEOBENY);
   get_angle(buf, fp_corr);
-  tft_.print(buf);
+  tft_.print(buf+ String("  "));
   
   tft_.setCursor(ANGLEX,ANGLEUNTENY);
   get_angle(buf, fr_corr);
-  tft_.print(buf);           
+  tft_.print(buf+ String("  "));           
 }
 
 #endif

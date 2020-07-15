@@ -126,34 +126,33 @@
 #define WIDTH_BALKEN 15
 #define HEIGHT_BALKEN 75    // Balkenhöhe am Display -> nicht ändern
 
-#define TEXTMITTEOBENX 120
+#define TEXTMITTEOBENX 140
 #define TEXTRECHTSX 275 //132
 #define TEXTUNTENY 213
 #define VALUEOBENY 105  // 102
 #define VALUEUNTENY 205 // war 205
 #define VALUERECHTSX 293 //169 
 
-//#define BITMAPOBENX 67  // Faktor 1 1
-//#define BITMAPOBENY 30
 #define BITMAPOBENX 120 //50    // Faktor 2 2
 #define BITMAPOBENY 21
 #define VECTOROBENX 155 //50    // Faktor 2 2
-#define VECTOROBENY 43
+#define VECTOROBENY 65
 
-//#define BITMAPUNTENX 78
-//#define BITMAPUNTENY 120 
 #define BITMAPUNTENX 132 //62   // Faktor 2 2
 #define BITMAPUNTENY 118 
 #define VECTORUNTENX 160 //62   // Faktor 2 2
-#define VECTORUNTENY 145 
+#define VECTORUNTENY 165 
 
 #define BITMAPOBENW 40
 #define BITMAPOBENH 30
 #define BITMAPUNTENW 32
 #define BITMAPUNTENH 30 
 #define ANGLEX 131 // 61
-#define ANGLEOBENY 81
-#define ANGLEUNTENY 194
+#define ANGLEOBENY 108//81
+#define ANGLEUNTENY 213 //194
+
+#define FAKTOR_OBEN 0.9
+#define FAKTOR_UNTEN 0.9
 
 #else
 // 128x160 TFT 1,8"

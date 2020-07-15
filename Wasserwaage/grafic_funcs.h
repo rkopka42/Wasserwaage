@@ -1,10 +1,8 @@
 /* grafic_funcs.h
  *  
- *  Polygonfill aus  opencv/modules/imgproc/src/drawing.cpp 
- * 
+ *  Polygonfill
+ *  aus http://www-lehre.informatik.uni-osnabrueck.de/~cg/2000/skript/4_2_Scan_Line_Verfahren_f_252_r.html
  */
-
-// aus http://www-lehre.informatik.uni-osnabrueck.de/~cg/2000/skript/4_2_Scan_Line_Verfahren_f_252_r.html
 
 #define INT_MAX_VALUE 32767  // gibts da was fertiges ?
 
@@ -12,29 +10,6 @@ class Point {
   public:
   int x;
   int y;
-};
-
-// Womografiken
-
-// alles relativ
-
-// werden hier nur als Platzhalter benutzt und noch überschrieben
-Point seite_[] = {
-  {0,0},   {-40,25},
-  {15,0},   {5,10},   {10,0},   {5,-10},
-  {30,0},   {5,10},   {10,0},   {5,-10},
-  {15,0},   {0,-60},   {-90,0},   {0,20},  {20,0},   {-20,20},   {-10,0}, {0,20}
-  , {0,0}
-};
-
-// alles relativ
-Point back_[] = {
-  {0,0},  {-30,30}, 
-  {10,0},   {0,10},   {10,0},   {0,-10}, {20,0},  // l Rad
-  {0,10},   {10,0},   {0,-10},  {10,0}, // r Rad
-  
-  {0,-60},   {-60,0},   {0,60}  // Aufbau noch ohne Spiegel
-    , {0,0}
 };
 
 /** Klasse zur Implementation einer verzeigerten Kantenliste. */
@@ -99,7 +74,7 @@ Point back_[] = {
   }
 };
   
-static Edge *zeiger[30];
+static Edge *zeiger[30];  // Kantenzahl, nicht größer als Punktezahl
 static int zeigercnt=0;
 
 /*************************************************************************************/
@@ -146,11 +121,7 @@ static int zeigercnt=0;
 
   zeiger[zeigercnt]=newedge;
   zeigercnt++;
-/*
-  DSerial.print(" c:");
-  DSerial.print((int)newedge, HEX);
-  DSerial.print(" ");
-  */
+
   // sortiert nach
   edge1->next = newedge;                                         // max_y
   delete(P2);
@@ -190,11 +161,7 @@ int Edge_Sort(                       /* erzeugt nach y sortierte Kantenliste */
 
   zeiger[zeigercnt]=edge1;
   zeigercnt++;
-/*
-  DSerial.print(" b:");
-  DSerial.print((int)edge1, HEX);
-  DSerial.print(" ");
-  */
+
   edges->next=edge1;
   edge1->next=NULL;
 
@@ -210,10 +177,7 @@ int Edge_Sort(                       /* erzeugt nach y sortierte Kantenliste */
       Insert(edges,P1,P[k],Next_y(k,P,n));
     else 
     {
-      //set_dither_line(P1,P[k].x);   
        tft_.drawFastHLine(P1.x, P1.y,P[k].x-P1.x , color);
-       //tft_.drawLine(P1.x, P1.y,P[k].x, P1.y, ST77XX_WHITE);
-  //     DSerial.println(String(k) + "::: "+  String(P1.x)+ "/" + String(P1.y) + " --> " + String(P[k].x) + "/" + String(P1.y));
     }
     if (P[k].y < bottom_y)  bottom_y = P[k].y;
     P1 = P[k];
@@ -272,7 +236,6 @@ void Fill(                      /* generiert fuer je zwei Schnittpunkte   */
         int scan                       /* Scanline                               */
         , uint16_t color=ST77XX_WHITE)
 {
-  //return;  auch so, aber später
   Point *Q = new Point();   // wieso new nötig ?
   
   do 
@@ -281,14 +244,8 @@ void Fill(                      /* generiert fuer je zwei Schnittpunkte   */
     Q->x = (int) (edges->x_int+0.5);
     Q->y = scan;
     edges = edges->next;
-    //set_dither_line(Q,(int)(edges.x_int+0.5) );
-//                tft_.drawLine(Q->x, Q->y, Q->x+(int)(edges->x_int+0.5), Q->y, ST77XX_WHITE);
-//              DSerial.println(String(scan) + ":: "+  String(Q->x)+ "/" + String(Q->y) + " --> " + String(Q->x+(int)(edges->x_int+0.5)) + "/" + String(Q->y));
 
-// void drawFastHLine(uint8_t x0, uint8_t y0, uint8_t length, uint16_t color);
     tft_.drawFastHLine(Q->x, Q->y, (int)(edges->x_int+0.5)-Q->x, color); // bringt nicht so viel
-    //tft_.drawLine(Q->x, Q->y, (int)(edges->x_int+0.5), Q->y, ST77XX_WHITE);
-  //  DSerial.println(String(scan) + ":: "+  String(Q->x)+ "/" + String(Q->y) + " --> " + String((int)(edges->x_int+0.5)) + "/" + String(Q->y));
   } 
   while (edges != l_act_edge);
   delete(Q);
@@ -340,15 +297,10 @@ void scan_line_fill(                    /* Fuellt das Innere eines Polygons */
   
   zeiger[zeigercnt]=edges;
   zeigercnt++;
-  /*
-DSerial.print(" a:");
-  DSerial.print((int)edges, HEX);
-  DSerial.print(" ");
-    */
 
   bottom_y = Edge_Sort(NumPoints, Points, edges, color);
 
-Edge *edges_ = edges;
+  Edge *edges_ = edges;
 
   l_act_edge = edges->next;
 
@@ -360,29 +312,9 @@ Edge *edges_ = edges;
     l_act_edge = Update_Edges(edges, l_act_edge);
   }
 
-  /* dispose dummies edges.next und edges */
-  /*
-//reicht nicht
-  do
-  {
-    edges = edges_->next; // nächstes Element
-
-  DSerial.print(" -");
-  DSerial.print((int)edges, HEX);
-  DSerial.print(" ");
-    delete(edges_); // dieses vernichten
-    edges_=edges; 
-  }
-  while (edges_ != NULL); 
-  */
-  //DSerial.println(" zeigercnt=" + String(zeigercnt));
+  // Quelle war JAVA, wo es kein delete() gibt, daher etwas umständlich
   for (int n=0; n<zeigercnt; n++)
   {
-   /* DSerial.print(" -");
-    DSerial.print((int)zeiger[n], HEX);
-    DSerial.print(" ");*/
     delete(zeiger[n]); 
   }
-  //edges->next = NULL;
-  //edges = NULL;
 }

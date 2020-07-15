@@ -676,7 +676,7 @@ void loop(void)
           show_display();
 #endif
     
-  /*
+#if 1  
           DSerial.print("fp_corr=");
           DSerial.print(fp_corr);
           DSerial.print(" fr_corr=");
@@ -689,7 +689,7 @@ void loop(void)
           DSerial.print(z3);
           DSerial.print(" z4=");
           DSerial.println(z4);
-*/
+#endif
 
 #if defined USE_KOMPASS || defined USE_M5KOMPASS
         int ret = get_compass();  // hier auch eine Mittelung ?
