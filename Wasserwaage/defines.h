@@ -2,8 +2,11 @@
  * 
  */
 
-#define VERSION 9005  // Format v.ss.xxx wie in der Firma - keine führende 0!!
-#define VERSIONSTRING "0.09.005"  // automatisch generieren ?
+#ifndef _DEFINES_H
+#define _DEFINES_H
+
+#define VERSION 9006  // Format v.ss.xxx wie in der Firma - keine führende 0!!
+#define VERSIONSTRING "0.09.006"  // automatisch generieren ?
 
 #define CFGFILE_NAME "/Wasserwaage.cfg"
 #define LOGFILE_NAME "/Wasserwaage.log"
@@ -193,3 +196,27 @@
 #define FILE_WRITE  "w"
 #define FILE_READ   "r"
 #define FILE_APPEND "a"
+
+typedef struct {
+  float angle;   // Rotation um Z Achse UZS  -> unklar ob wirklich alles abgedeckt, aber grundsätzlich sieht es gut aus
+  float laenge;  // muß kein float sein, aber Berechnungen sind immer in float(==double)
+  float breite1;
+  float breite2; // Hinterachse hat mehr Spurbreite(?)
+  float fcp;     // Kalibrierwerte -> Hidden ?
+  float fcr;
+  int    achse0;  // Index gibt Achsnutzung an xyz   Wert gibt Achse des Sensors an 1 ist die x Achse nach Platinenaufdruck
+  int    achse1;
+  int    achse2;
+                      // Vorzeichen drehen die Richtung um, Index nicht ab 0, da dort kein Vorzeichen geht !
+  int maxX;     // Grenzwerte der Kompaßwerte aus der Kalibrierung
+  int minX;
+  int maxY;
+  int minY;                      
+  float  angle2;   // Rotation um Z Achse UZS  -> unklar ob wirklich alles abgedeckt, aber grundsätzlich sieht es gut aus  
+     
+  String ssid;    // oder char[] ?
+  String password;
+  String host;    // unklar
+}  confvalues_t;
+
+#endif

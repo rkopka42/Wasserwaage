@@ -1,6 +1,8 @@
 /* http.h  Webserver handler
  * 
  */
+
+bool getvaluesFromParams_(conf_t cfg[]);
  
 void handleCalib() 
 {
@@ -22,7 +24,7 @@ void handleCalib()
       // write  
       DSerial.println(" C Calib");
       String output;
-      write_ini(CFGFILE_NAME , config, OUTPUT_FILE, output);
+      write_ini(CFGFILE_NAME , config, sizeof(config)/sizeof(conf_t), OUTPUT_FILE, output);
       DSerial.println("New ini:\n" + output);
       calib_changed=false;
     }
@@ -80,7 +82,7 @@ void handleConfig()
   {
     DSerial.print(" SetDefaultValues ");
     //write_logfile("Set Default Values");
-    read_defaults(config);
+    read_defaults(config, sizeof(config)/sizeof(conf_t));
   }
 
   confvalues_old = confvalues;    // alte Werte merken, falls was nicht stimmt
@@ -90,7 +92,7 @@ void handleConfig()
   {
     DSerial.println("config");
 
-    is_save=getvaluesFromParams_(); // sync server version
+    is_save=getvaluesFromParams_(config); // sync server version
 
     // man könnte die c1... auch mit testen für is_save, aber das müßte vorher schon erfüllt sein
     // get values - these are not handled by cfg functions
@@ -135,7 +137,7 @@ void handleConfig()
       // write  
       DSerial.println(" Differenz ");
       String output;
-      write_ini(CFGFILE_NAME , config, OUTPUT_FILE, output);
+      write_ini(CFGFILE_NAME , config, sizeof(config)/sizeof(conf_t), OUTPUT_FILE, output);
       DSerial.println("New ini:\n" + output);
     }
   }
@@ -186,12 +188,12 @@ void handleConfig()
   message.replace("STELLVERTRETER", "");  // empty at the moment
 
   String output;
-  write_ini("" , config, OUTPUT_FORM, output);
+  write_ini("" , config, sizeof(config)/sizeof(conf_t), OUTPUT_FORM, output);
   message.replace("CONFIGVALUES_", output);
 
   DSerial.println(" ConfigText:");
   DSerial.println(output);
-  write_ini("" , config, OUTPUT_SERIAL, output);
+  write_ini("" , config, sizeof(config)/sizeof(conf_t), OUTPUT_SERIAL, output);
     
   server.send(200, "text/html", message);
   DSerial.println("Root 200");
@@ -388,7 +390,7 @@ void handleCompass()
       // write  
       DSerial.println(" C Calib");
       String output;
-      write_ini(CFGFILE_NAME , config, OUTPUT_FILE, output);
+      write_ini(CFGFILE_NAME , config,  sizeof(config)/sizeof(conf_t), OUTPUT_FILE, output);
       DSerial.println("New ini:\n" + output);
       config_changed=false;
     }    
@@ -506,3 +508,54 @@ getScript1(url, function(){ paintcompass();});
           DSerial.println(z4);
 }
 #endif
+
+
+// hier für den normalen Server
+
+// only the correct ones are checked, but all need to be there !?  Or just skip the hidden ? or flag for taking only what's there and then save is only true if one parameter came.
+// Hidden values are not changed in the form and don't need to be set, so they are missing in parameters  -> is_save = irgendwas geändert !
+// what about DONTUSE ??? 
+bool getvaluesFromParams_(conf_t cfg[])   // server ist global
+{
+  //AsyncWebParameter* p ;                                // Points to parameter structure
+  static String      argument ;                         // Next argument in command
+  static String      value ;                            // Value of an argument
+  int                n;
+  //String             pre_text;
+  int                conf_no = sizeof(cfg)/sizeof(conf_t);
+  bool               is_save=false;
+  
+  for (n=0;n<conf_no;n++)       // input Werte durchgehen
+  {
+    argument = "input"+String(n);
+    value = server.arg(argument);
+    if (value!="")
+    {
+      //p = request->getParam("input"+String(n));
+      //value = p->value() ;                                  // Get the specified value
+      //argument = p->name() ;
+      //value = 
+    //  pre_text += argument + " = " + value +"<br>\n";
+
+      DSerial.print(argument + " = " + value +"\n");
+
+      if (config[n].typ == TYPE_INT)
+      {
+        *(int*)(cfg[n].value) = value.toInt();
+        is_save=true;
+      }
+      else if (cfg[n].typ == TYPE_STRING)
+      {
+        *(String*)(cfg[n].value) = value;
+        is_save=true;
+      }               
+      else if (cfg[n].typ == TYPE_FLOAT)
+      {
+        *(float*)(cfg[n].value) = value.toFloat();
+        //DSerial.print(argument + "=" + String(value) +"\n");
+        is_save=true;
+      }        
+    }  
+  } // for
+  return is_save;
+}

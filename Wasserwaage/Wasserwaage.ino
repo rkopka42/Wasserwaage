@@ -7,7 +7,8 @@
  *           27.06.2020 rKop  compiliert auch für externes TFT (kein M5STACK)
  *           28.06.2020 rKop  MODE eingeführt - Spannung und Sleep
  *  0.09.004 04.07.2020 rKop  Anzeige vor Sleep, FAST auch bei Kompaß, Taste für WLAN, AP wieder einschalten, Temp Messung besser, CFG korrigiert
- *  0.09.005 13.07.2020? rKop  M5Stack Grafik angepaßt und Vektor
+ *  0.09.005 15.07.2020 rKop  kein Tag ! M5Stack Grafik angepaßt und Vektor, Polyfill
+ *  0.09.006 16.07.2020? rKop .cpp Files
  *  
  *  TODO
  *       
@@ -55,7 +56,7 @@
 
 #endif
 
-#include "grafic_funcs.h"
+//#include "grafic_funcs.h"
 
 WebServer server(80); //Server on port 80
 
@@ -100,6 +101,36 @@ String reloadstring="";
 
 // Unterfunktionen
 #include "cfg.h"
+
+confvalues_t confvalues;
+
+conf_t config[] =
+{
+    {&confvalues.angle, -360, 360, "0",TYPE_FLOAT, "angle", "Gyro Rotation um Z-Achse in Grad",NULL},
+    {&confvalues.laenge, 100, 500, "381",TYPE_FLOAT, "laenge", "Abstand der Achsen (cm)",NULL},    // INT würde reichen, aber gerechnet wird immer mit Float
+    {&confvalues.breite1, 100, 300, "184",TYPE_FLOAT, "breite1", "Spurbreite Vorderachse (cm)",NULL},
+    {&confvalues.breite2, 100, 300, "202",TYPE_FLOAT, "breite2", "Spurbreite Hinterachse (cm)",NULL},
+    {&confvalues.fcp, -2000, 2000, "0",TYPE_FLOAT_HIDDEN, "fcp", "Kalibrierwert fcp fuer Gyro",NULL}, // Wertebereich ? Aber HIDDEN egal
+    {&confvalues.fcr, -2000, 2000, "0",TYPE_FLOAT_HIDDEN, "fcr", "Kalibrierwert fcr fuer Gyro",NULL},
+
+    // Gyro Ausrichtung in den Achsen -3 ... +3 (ohne 0) - jede verfügbare Achse in beiden Richtungen
+    {&confvalues.achse0,  -3, 3, "-2", TYPE_INT_DONT_USE, "achse0",  "Ausrichtung Achse0",NULL},   // erstmal händisch machen, ist sonst zu speziell
+    {&confvalues.achse1,  -3, 3, "1",  TYPE_INT_DONT_USE, "achse1",  "Ausrichtung Achse1",NULL},   // ginge auch einfach als INT
+    {&confvalues.achse2,  -3, 3, "3",  TYPE_INT_DONT_USE, "achse2",  "Ausrichtung Achse2",NULL},   // 
+
+    // Kompaß - Hidden = wird nur durch SW gesetzt
+    {&confvalues.maxX,  -6000, 6000, "2124", TYPE_INT_HIDDEN, "maxX",  "Kalibrierwerte max.Wert X-Achse",NULL},   // Test  2124,1947,2133,1944,
+    {&confvalues.minX,  -6000, 6000, "1947", TYPE_INT_HIDDEN, "minX",  "Kalibrierwerte min.Wert X-Achse",NULL},   
+    {&confvalues.maxY,  -6000, 6000, "2133", TYPE_INT_HIDDEN, "maxY",  "Kalibrierwerte max.Wert Y-Achse",NULL},   
+    {&confvalues.minY,  -6000, 6000, "1944", TYPE_INT_HIDDEN, "minY",  "Kalibrierwerte min.Wert Y-Achse",NULL},   
+    {&confvalues.angle2, -360, 360, "0",TYPE_FLOAT, "angle2", "Kompass Drehung um die Z-Achse in Grad",NULL},
+
+    {&confvalues.ssid,       8, 20,  "Wasserwaage", TYPE_STRING, "ssid", "Accesspoint SSID",NULL},       // min Length in der SW testen ?  Fehlermeldungen ? Oder egal, man muß wissen, was man tut ?
+    {&confvalues.password,   8, 20,  "ww00aa11", TYPE_STRING, "password", "Accesspoint password",NULL},  // ändern ?
+    {&confvalues.host,       8, 20,  "hostIP",   TYPE_STRING, "host", "host for Client Requests",NULL}  // noch nicht benutzt
+};
+
+
 #include "utils.h"
 #include "http.h"
 
@@ -135,9 +166,10 @@ void setup(void)
   }
 #endif 
 
-  read_defaults(config);
-  read_ini(CFGFILE_NAME , config);  // Ergebnis auswerten ?
-
+  read_defaults(config, sizeof(config)/sizeof(conf_t));
+  read_ini(CFGFILE_NAME , config, sizeof(config)/sizeof(conf_t));  // Ergebnis auswerten ?
+  write_ini("" , config, sizeof(config)/sizeof(conf_t), OUTPUT_SERIAL, output);
+  
 #ifdef USE_DISPLAY
   // Start device display with ID of sensor
   tft_.setTextSize(2);
@@ -502,7 +534,7 @@ void loop(void)
         DSerial.println(" Taste Calib");
         //pre_text += "Differenz<br>\n";
         String output;
-        write_ini(CFGFILE_NAME , config, OUTPUT_FILE, output);
+        write_ini(CFGFILE_NAME , config,  sizeof(config)/sizeof(conf_t), OUTPUT_FILE, output);
         DSerial.println("New ini:\n" + output);
       }
 //      config_changed=false;    
@@ -676,7 +708,7 @@ void loop(void)
           show_display();
 #endif
     
-#if 1  
+#if 0
           DSerial.print("fp_corr=");
           DSerial.print(fp_corr);
           DSerial.print(" fr_corr=");

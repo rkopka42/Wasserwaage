@@ -2,6 +2,8 @@
  * 
  */
 
+#include "grafic_funcs.h"
+
 static float  keilhoehe=KEIL_HOEHE;
 
 String farben[]= {
@@ -564,6 +566,7 @@ void draw_vector_fill(xy *form, int punkte, int x, int y, float angle=0, float f
 
 void show_display(void)
 {
+  static bool first=true; 
   char buf[10];
   tft_.setTextSize(2);            
   static float last_fp_corr=0, last_fr_corr=0;
@@ -648,14 +651,13 @@ void show_display(void)
       
   //draw_Bitmap_faktor(BITMAPOBENX, BITMAPOBENY, p_map, BITMAPOBENW, BITMAPOBENH, 2,2, false, color);       
   
-  if ( abs(last_fp_corr_-fp_corr_)>0.1 )  // float, also abs() und Schwelle dazu
+  if ( abs(last_fp_corr_-fp_corr_)>0.1 or first)  // float, also abs() und Schwelle dazu
   {   
   //  draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, min((float)int(-last_fp_corr*5), (float)45), 0.7, ST77XX_BLACK);
   //  draw_vector(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, min((float)int(-fp_corr*5),(float)45), 0.7, color);
     draw_vector_fill(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, -last_fp_corr_, FAKTOR_OBEN, ST77XX_BLACK);
     draw_vector_fill(seite, sizeof(seite)/sizeof(xy), VECTOROBENX ,VECTOROBENY, -fp_corr_, FAKTOR_OBEN, color);
  
-    //last_fp_corr=fp_corr;
     last_fp_corr_=fp_corr_;
   }
 
@@ -697,23 +699,26 @@ void show_display(void)
     fr_corr_ = max((float)int(fr_corr*5),(float)-45.0);
   }
   
-  if ( abs(last_fr_corr_-fr_corr_)>0.1 )  // float, also abs() und Schwelle dazu
+  if ( abs(last_fr_corr_-fr_corr_)>0.1 or first)  // float, also abs() und Schwelle dazu
   {   
     //  draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, min((float)int(last_fr_corr*5),(float)45.0), 1, ST77XX_BLACK);
     //  draw_vector(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, min((float)int(fr_corr*5),(float)45.0), 1, color);
     draw_vector_fill(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, last_fr_corr_, FAKTOR_UNTEN, ST77XX_BLACK);
     draw_vector_fill(back, sizeof(back)/sizeof(xy), VECTORUNTENX ,VECTORUNTENY, fr_corr_, FAKTOR_UNTEN, color);
-   // last_fr_corr=fr_corr;
     last_fr_corr_=fr_corr_;
   }
   
   tft_.setCursor(ANGLEX,ANGLEOBENY);
+ // tft_.setTextSize(3);
   get_angle(buf, fp_corr);
   tft_.print(buf+ String("  "));
+ // tft_.setTextSize(2);
   
   tft_.setCursor(ANGLEX,ANGLEUNTENY);
   get_angle(buf, fr_corr);
-  tft_.print(buf+ String("  "));           
+  tft_.print(buf+ String("  "));
+
+  first=false;
 }
 
 #endif
