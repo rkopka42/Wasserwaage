@@ -56,8 +56,6 @@
 
 #endif
 
-//#include "grafic_funcs.h"
-
 WebServer server(80); //Server on port 80
 
 #ifdef USE_TEMP
@@ -91,7 +89,6 @@ bool pressedT=false;
 int modeT=MODE_WLAN;
 bool standby=false;
 bool eeprom_ok=false;
-//bool do_refresh=false;
 bool do_calib=false;  // compass
 int nb; // number of clients
 bool Dplus = false;

@@ -11,14 +11,8 @@
 #define CFGFILE_NAME "/Wasserwaage.cfg"
 #define LOGFILE_NAME "/Wasserwaage.log"
 
-#define SEROUT    // dann gibts Ausgaben - sind im fertigen System nicht nötig, für größere Blöcke, sonst DSerial
-// wie oben, aber mit Wert für einfachen Austausch, könnte man auch noch auf Variable ändern für dynamische Anpassungen
-#ifdef SEROUT
-  #define DSERIAL 1
-#else
-  #define DSERIAL 0
-#endif  
-// ? define für Serial.print ...   Makros mit . gehen nicht (?)
+#define DSERIAL 1    // dann gibts Ausgaben - sind im fertigen System nicht nötig, für größere Blöcke, sonst DSerial
+
 #define DSerial  if (DSERIAL) Serial
 
 //#define DO_SLEEP  // Prozessor Sleep durchführen
@@ -129,6 +123,7 @@
 #define WIDTH_BALKEN 15
 #define HEIGHT_BALKEN 75    // Balkenhöhe am Display -> nicht ändern
 
+#define TEXTHALBLINKS 32
 #define TEXTMITTEOBENX 140
 #define TEXTRECHTSX 275 //132
 #define TEXTUNTENY 213

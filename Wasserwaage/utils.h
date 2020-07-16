@@ -570,10 +570,19 @@ void show_display(void)
   char buf[10];
   tft_.setTextSize(2);            
   static float last_fp_corr=0, last_fr_corr=0;
-  
+
+  tft_.setTextColor(ST77XX_WHITE,ST77XX_BLACK);  
   get_height(buf, int(z4), MAX_SHOW,true);
   tft_.setCursor(0,0);
   tft_.print(buf);
+
+  if (nb>0)
+  {
+    sprintf(buf, "W:%1d", nb);
+    tft_.setCursor(TEXTHALBLINKS,0);
+    tft_.setTextColor(ST77XX_BLUE,ST77XX_RED);  
+    tft_.print(buf);
+  }
   
   if (do_calib)
     strcpy(buf,"cal");
