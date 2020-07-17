@@ -203,10 +203,12 @@ int get_compass()
   char n; 
 
 #ifdef USE_M5KOMPASS
+#if 0
   DSerial.print(" Comp: ");
   DSerial.print(comp_x);
   DSerial.print(", ");
-  DSerial.println(comp_y); 
+  DSerial.println(comp_y);
+#endif
 // done outside
 #else
 // falls niemand Werte liefert
@@ -292,9 +294,10 @@ int get_compass()
     mygrad = mygrad +360;
   if (mygrad > 360)    
     mygrad = mygrad -360;
+#if 0    
   DSerial.print(mygrad);
   DSerial.println("  Grad"); 
-  
+#endif  
   return 0;
 }
 

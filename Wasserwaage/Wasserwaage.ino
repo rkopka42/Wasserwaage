@@ -15,6 +15,18 @@
  *  - noch mehr cfg und calib ? Schwerkraft bei Config zumindest anzeigen.
  *  
  *  Höhe 700x480 -> 700(?) x 390 -> paßt für Pumpkin, noch Platz rechts
+
+ Gyro für M5Stack: https://github.com/kriswiner/MPU9250/issues/232
+ 
+ Managed to figure it out. The init routine in the mpu9250.cpp file needs to reset the device to a known set of defaults at startup. I noticed comparing Kris' library to the old one I used to use by Jeff Rowberg that the only difference was in the power management setting. After trying changing it to 0x80 it worked. After reading the MPU9250 spec, it seems 0x80 does a reset of the device to a set of known values.
+
+'void MPU9250::initMPU9250()
+{
+// wake up device
+writeByte(MPU9250_ADDRESS, PWR_MGMT_1, 0x00); // Clear sleep mode bit (6), enable all sensors
+delay(100); // Wait for all registers to reset
+'
+Change the 0x00 to 0x80 and you get consistent results after startup, I'm using the M5Stack too and I just verified it.
  */
  
 #include <math.h> // Sinus...
@@ -107,8 +119,8 @@ conf_t config[] =
     {&confvalues.laenge, 100, 500, "381",TYPE_FLOAT, "laenge", "Abstand der Achsen (cm)",NULL},    // INT würde reichen, aber gerechnet wird immer mit Float
     {&confvalues.breite1, 100, 300, "184",TYPE_FLOAT, "breite1", "Spurbreite Vorderachse (cm)",NULL},
     {&confvalues.breite2, 100, 300, "202",TYPE_FLOAT, "breite2", "Spurbreite Hinterachse (cm)",NULL},
-    {&confvalues.fcp, -2000, 2000, "0",TYPE_FLOAT_HIDDEN, "fcp", "Kalibrierwert fcp fuer Gyro",NULL}, // Wertebereich ? Aber HIDDEN egal
-    {&confvalues.fcr, -2000, 2000, "0",TYPE_FLOAT_HIDDEN, "fcr", "Kalibrierwert fcr fuer Gyro",NULL},
+    {&confvalues.fcp, -360, 360, "0",TYPE_FLOAT_HIDDEN, "fcp", "Kalibrierwert fcp fuer Gyro",NULL}, // Wertebereich Grad ? Aber HIDDEN egal
+    {&confvalues.fcr, -360, 360, "0",TYPE_FLOAT_HIDDEN, "fcr", "Kalibrierwert fcr fuer Gyro",NULL},
 
     // Gyro Ausrichtung in den Achsen -3 ... +3 (ohne 0) - jede verfügbare Achse in beiden Richtungen
     {&confvalues.achse0,  -3, 3, "-2", TYPE_INT_DONT_USE, "achse0",  "Ausrichtung Achse0",NULL},   // erstmal händisch machen, ist sonst zu speziell
@@ -180,6 +192,10 @@ void setup(void)
   tft_.println(confvalues.breite1);
   tft_.print(F("Breite2:"));
   tft_.println(confvalues.breite2);
+  tft_.print(F("FCP:"));
+  tft_.println(confvalues.fcp);
+  tft_.print(F("FCR:"));
+  tft_.println(confvalues.fcr);
 #endif
 
 // nur bei Bedarf einschalten mit MODE
@@ -313,7 +329,7 @@ void setup(void)
 
 #ifdef USE_DISPLAY
  // delay(3000);
- delay(1000);
+ delay(2000);
   tft_.fillScreen(BLACK);
 #endif  
 }
@@ -576,10 +592,10 @@ void loop(void)
 
       // Now we'll calculate the accleration value into actual g's
       // This depends on scale being set
-      IMU.ax = (float)IMU.accelCount[0]*IMU.aRes; // - accelBias[0];
-      IMU.ay = (float)IMU.accelCount[1]*IMU.aRes; // - accelBias[1];
-      IMU.az = (float)IMU.accelCount[2]*IMU.aRes; // - accelBias[2];    
-/*
+      IMU.ax = (float)IMU.accelCount[0]*IMU.aRes;// - IMU.accelBias[0];  // Bias beim Einschalten nach Lage berechnet ?
+      IMU.ay = (float)IMU.accelCount[1]*IMU.aRes;// - IMU.accelBias[1];
+      IMU.az = (float)IMU.accelCount[2]*IMU.aRes;// - IMU.accelBias[2];    
+#if 0
       DSerial.print("x=" + String(IMU.accelCount[0])+ " ");
       DSerial.print("y=" + String(IMU.accelCount[1])+ " ");
       DSerial.print("z=" + String(IMU.accelCount[2])+ " ");
@@ -587,7 +603,7 @@ void loop(void)
       DSerial.print("ay=" + String(IMU.ay)+ " ");
       DSerial.print("az=" + String(IMU.az)+ " ");
       DSerial.println();
-*/
+#endif
 
     IMU.readMagData(IMU.magCount);  // Read the x/y/z adc values
     IMU.getMres();
@@ -634,25 +650,26 @@ void loop(void)
 #endif    
    
       // now exchange from array    -> ff[0] is x in real (z shows down, x in driving direction)
-      for (int n=0;n<3;n++)
-      {
+  
         ff[0] = f[ (int)(abs(confvalues.achse0)-1) ] * (confvalues.achse0 > 0 ? 1 : -1) ;
         ff[1] = f[ (int)(abs(confvalues.achse1)-1) ] * (confvalues.achse1 > 0 ? 1 : -1) ;
         ff[2] = f[ (int)(abs(confvalues.achse2)-1) ] * (confvalues.achse2 > 0 ? 1 : -1) ;       
-/*        
+#if 0
+    for (int n=0;n<3;n++)
+      {
         DSerial.print("n=");
         DSerial.print(n);
         DSerial.print(" f=");
         DSerial.print(f[n]);
         DSerial.print(" ff=");
-        DSerial.print(ff[n]);
-        DSerial.print("  vorz.=");
+        DSerial.println(ff[n]);
+   /*     DSerial.print("  vorz.=");
         DSerial.print((confvalues.achse[n] > 0 ? 1 : -1));
         DSerial.print(" confvalues.achse=");
-        DSerial.println(confvalues.achse[n]);
-  */      
+        DSerial.println(confvalues.achse[n]);*/
       }
-      // ab hier sind die Achsen korrigiert und man geht mit räumlich korrekten Achsen weiter. Nur noch die Drehung, die sich jetzt nich auf die 
+#endif   
+// ab hier sind die Achsen korrigiert und man geht mit räumlich korrekten Achsen weiter. Nur noch die Drehung, die sich jetzt nich auf die 
       // Sensor xy-Achsen sondern auf die flache xy Achsen bezieht
       fxrot = cos(confvalues.angle*PI/180)*ff[0] + sin(confvalues.angle*PI/180)*ff[1];
       fyrot = sin(confvalues.angle*PI/180)*ff[0] - cos(confvalues.angle*PI/180)*ff[1];
@@ -706,11 +723,19 @@ void loop(void)
 #endif
     
 #if 0
-          DSerial.print("fp_corr=");
+          DSerial.print("fxrot=");
+          DSerial.print(fxrot);
+          DSerial.print(" fyrot=");
+          DSerial.print(fyrot);
+          DSerial.print("   fp=");
+          DSerial.print(fp);
+          DSerial.print(" fr=");
+          DSerial.print(fr);
+          DSerial.print("  fp_corr=");
           DSerial.print(fp_corr);
           DSerial.print(" fr_corr=");
           DSerial.print(fr_corr);
-          DSerial.print(" z1=");
+          DSerial.print("   z1=");
           DSerial.print(z1);
           DSerial.print(" z2=");
           DSerial.print(z2);
