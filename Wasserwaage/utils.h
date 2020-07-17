@@ -305,6 +305,7 @@ int get_compass()
 //---------------------------------------------------------------
 void getWeather()
 {
+#ifndef USE_M5STACK
   // Measure Relative Humidity from the HTU21D or Si7021
   humidity = sensor.getRH();
 
@@ -313,6 +314,16 @@ void getWeather()
   // Temperature is measured every time RH is requested.
   // It is faster, therefore, to read it from previous RH
   // measurement with getTemp() instead with readTemp()
+#else
+  int tt = IMU.readTempData();
+  
+  const float _tempScale = 333.87f;
+  const float _tempOffset = 21.0f;
+  tempC = ((((float) tt) - _tempOffset)/_tempScale) + _tempOffset;
+  //DSerial.print("Temp=" + String(tt)+ "   ");
+  //DSerial.println(tempC,6);
+  humidity=0;
+#endif
 }
 #endif
 
@@ -752,7 +763,10 @@ void make_value_text(String &text)
 
 #ifdef USE_TEMP                  
   text +=         "Temp: " + String(tempC,1) + "C<br>"
-                  "Humid:" + String(humidity,1) + "%<br>";
+ #ifndef USE_M5STACK 
+                  "Humid:" + String(humidity,1) + "%<br>"
+ #endif
+                  ;                  
 #endif                             
   text +=          "Volt:"  + String(sensorValue/175.5, 2) + "V<br>";        
 

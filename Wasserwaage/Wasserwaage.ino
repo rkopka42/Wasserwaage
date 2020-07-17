@@ -71,11 +71,12 @@ Change the 0x00 to 0x80 and you get consistent results after startup, I'm using 
 WebServer server(80); //Server on port 80
 
 #ifdef USE_TEMP
- #include "SparkFun_Si7021_Breakout_Library.h" // Temp und Humidity Sensor
+ #ifndef USE_M5STACK
+  #include "SparkFun_Si7021_Breakout_Library.h" // Temp und Humidity Sensor
 
 //Create Instance of HTU21D or SI7021 temp and humidity sensor (and MPL3115A2 barrometric sensor)
- Weather sensor;
-
+  Weather sensor;
+  #endif
  float humidity = 0;
  float tempC = 0;
 #endif
@@ -149,18 +150,23 @@ conf_t config[] =
 void setup(void)
 {
   String output;
+     
+  DSerial.begin(115200);
+  DSerial.println(""); // wegen Boot Messages
+  DSerial.println((String("Wasserwaage - ") + String(VERSIONSTRING)));
 
 #ifdef USE_M5STACK
   M5.begin();
   pinMode(CAL_KEY, INPUT_PULLUP);
   dacWrite (25,0); // das macht den Lautsprecher leise, nur ein kurzer Knack beim Start
+#else  
+ #ifdef USE_TEMP
+  //Initialize the I2C sensors and ping them
+  sensor.begin();
+ #endif
 #endif
 
   Wire.begin();
-     
-  DSerial.begin(115200);
-  DSerial.println(""); // wegen Boot Messages
-  DSerial.println((String("Wasserwaage - ") + String(VERSIONSTRING)));
 
   pinMode(LICHT, OUTPUT);
   digitalWrite(LICHT, HIGH);
@@ -322,11 +328,6 @@ void setup(void)
   //adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_2_5); // Verstärkung 2,5dB 2,5V? 0dB =1,1 V Max  // GPIO36
   //adc1_config_channel_atten(ADC1_CHANNEL_3, ADC_ATTEN_DB_0); //  Verstärkung 0dB =1,1 V Max   // GPIO39
     
-#ifdef USE_TEMP
-  //Initialize the I2C sensors and ping them
-  sensor.begin();
-#endif
-
 #ifdef USE_DISPLAY
  // delay(3000);
  delay(2000);
@@ -678,7 +679,7 @@ void loop(void)
 
       // Ausgabe nur bei jedem xten Durchlauf, so ca. 4-5 Werte pro sek.
       if ((print_ % CALC_PER_DISPLAY ) ==0) // and !standby)
-      { 
+      {        
           // in Funktion auslagern, evt. auch mal ein IRQ/Thread          
           if ( ff[2] !=0)
           {
