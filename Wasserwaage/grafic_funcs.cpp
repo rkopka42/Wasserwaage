@@ -509,7 +509,7 @@ void show_display(void)
   else
   {
     tft_.setCursor(TEXTHALBLINKS,0);
-    tft_.setTextColor(ST77XX_BLACK,ST77XX_BLACK);  
+    tft_.setTextColor(ST77XX_WHITE,ST77XX_BLACK);  
     tft_.print("   ");    
   }
   

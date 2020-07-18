@@ -527,9 +527,12 @@ void loop(void)
     pressed=false;
   }
 
-  //Bei Calib und poly fill gibt es einen Sprung und es wird nicht gelöscht
+  if (press_long_active)  // Anzeige gleich, Schreiben erst beim Loslassen
+  {
+    confvalues.fcp=fp;  confvalues.fcr=fr;
+  }
   
-  if (press_long_active)    // anders, bei Erreichen Flag setzen, das bearbeitet wird und dann gesperrt bis !pressed
+  if (press_long)    // anders, bei Erreichen Flag setzen, das bearbeitet wird und dann gesperrt bis !pressed
   {
     DSerial.println("calib");
     confvalues.fcp=fp;  confvalues.fcr=fr;    
@@ -550,6 +553,7 @@ void loop(void)
       }
 //      config_changed=false;    
       calib_changed=false;
+      press_long=false;
     }    
   } 
 #endif
