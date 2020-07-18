@@ -45,9 +45,9 @@ typedef struct {
     void *addon;    // Zeiger aufs Hilfsinformationen z.B. für Auswahlfelder
 }  conf_t;
 
-int read_defaults(conf_t cfg[], int cfg_elements);
-int read_ini(String filename, conf_t cfg[], int cfg_elements);
-int write_ini(String filename, conf_t cfg[], int cfg_elements, int outputtype, String &output);
-bool getvaluesFromParams_(conf_t cfg[], int cfg_elements) ;
+int  read_defaults(conf_t cfg[], int cfg_elements);
+int  read_ini(String filename, conf_t cfg[], int cfg_elements);
+int  write_ini(String filename, conf_t cfg[], int cfg_elements, int outputtype, String &output);
+bool getvaluesFromParams_(conf_t cfg[], int cfg_elements);
 
 #endif

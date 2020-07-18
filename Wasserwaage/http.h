@@ -2,7 +2,15 @@
  * 
  */
 
+#include "grafics.h"
+#include "grafic_funcs.h"
+
 bool getvaluesFromParams_(conf_t cfg[]);
+void paint_main(String &message);
+
+//#ifdef SHOW_KOMPASS
+// set up JS code for painting the canvas for compass
+void paint_compass(String &message);
  
 void handleCalib() 
 {
@@ -559,3 +567,308 @@ bool getvaluesFromParams_(conf_t cfg[])   // server ist global
   } // for
   return is_save;
 }
+
+String farben[]= {
+  "ctx.fillStyle = \"rgb(0,200,0)\";\n",
+  "ctx.fillStyle = \"rgb(200,0,0)\";\n",
+  "ctx.fillStyle = \"rgb(200,200,0)\";\n",
+  "ctx.fillStyle = \"rgb(0,0,200)\";\n"
+};
+
+
+// Canvas 
+
+//vertikales Rechteck nach oben
+// xpos ypos gibt den unteren linken Punkt an
+// bei line_value gibt es einen inversen Strich
+//ctx.fillRect (30, 18, 30, 200);  // x y b h
+void draw_value_v3(int xpos,int ypos, float value, float max_value, int max_height, int breite, float line_value, String &s)
+{
+    int16_t hoehe, strich;
+    int color=0;
+    bool too_much=false;
+    
+    if (value > max_value)  
+    {
+      value=max_value;  // evt. Kennung für Überlauf
+      too_much=true;
+    }
+    
+    hoehe  = value     /max_value * max_height;
+    strich = line_value/max_value * max_height;
+
+    s = "ctx.fillStyle = \"rgb(0,0,0)\";\n";
+    s += "ctx.beginPath();\n";
+    s += "ctx.moveTo(" + String(xpos-1+breite)              + " , " + String(ypos-strich+max_height)               + " );\n";
+    s += "ctx.lineTo(" + String(xpos-1+DREIECK_KANTE+breite)+ " , " + String(ypos-strich-DREIECK_KANTE+max_height) + " );\n";
+    s += "ctx.lineTo(" + String(xpos-1+DREIECK_KANTE+breite)+ " , " + String(ypos-strich+DREIECK_KANTE+max_height) + " );\n";
+    s += "ctx.fill();\n";
+
+    s+="ctx.fillRect (";
+    s+= String(xpos) + ", ";
+    s+= String(ypos+ max_height) + ", ";
+    s+= String(breite) + ", ";
+    s+= String(1) + "); \n";
+    
+    if (too_much)
+    {
+      s+="ctx.fillRect (";
+      s+= String(xpos) + ", ";
+      s+= String(ypos) + ", ";
+      s+= String(breite) + ", ";
+      s+= String(-10) + "); \n";
+    
+      s+="ctx.fillStyle = \"rgb(200,0,0)\";\n";
+    }      
+    else
+    {    
+      if (line_value>value)  s+="ctx.fillStyle = \"rgb(0,200,0)\";\n";
+      else                   s+="ctx.fillStyle = \"rgb(200,200,0)\";\n";
+    }
+
+    s+="ctx.fillRect (";
+    s+= String(xpos) + ", ";
+    s+= String(ypos+max_height-hoehe) + ", ";
+    s+= String(breite) + ", ";
+    s+= String(hoehe) + "); \n";
+    //DSerial.println(s);
+}
+
+// Erste Linie unsichtbar !!!
+void draw_pic(String &s, xy *form, int punkte, int x, int y, float angle=0, float factor=1)
+{ 
+ int n;//=0;
+ float lastx, lasty;
+ float nextx, nexty;
+ 
+ s="ctx.beginPath();\n";
+
+ lastx = x + form[0].x; // Startpunkt + erster Vektor
+ lasty = y + form[0].y;
+ //s+= "ctx.moveTo(" + String(int(lastx)) +", "+ String(int(lasty)) +");\n";
+
+ for (n=1; n<punkte; n++)
+ {
+    //DSerial.print("N="+String(n)+ " ");
+    nextx = lastx + form[n].x*factor * cos(angle*PI/180) - form[n].y*factor * sin(angle*PI/180);
+    nexty = lasty + form[n].x*factor * sin(angle*PI/180) + form[n].y*factor * cos(angle*PI/180);
+
+    if (n<=1)
+      s+= "ctx.moveTo(" + String(int(nextx)) +", "+ String(int(nexty)) +");\n";
+    else
+      s+= "ctx.lineTo(" + String(int(nextx)) +", "+ String(int(nexty)) +");\n";
+    lastx = nextx;
+    lasty = nexty;
+ }
+ s+="ctx.fill();\n";
+}
+
+#ifdef SHOW_KOMPASS
+// Funktion mit x y radius, farbe (Rosette), winkel; zurück String  
+String draw_compass(int16_t x, int16_t y, int16_t radius, String farbe, float winkel)
+{
+  String message5 = "var x=" + String(x) + "; var y=" + String(y) + "; var radius=" + String(radius) + "\n";
+  message5 += "ctx.fillStyle = \"rgb(0,0,0)\";";
+  message5 += "ctx.fillText(\"" + String(int(winkel*10)/10.0, 1)+ "\",x-38 ,y-180 );\n";  
+
+  String message6="";
+  for (int n=0;n<360;n+=20)
+  {
+    message6+= "ctx.beginPath();"
+      "ctx.moveTo(x, y);"
+      "ctx.arc(x, y, 120, ";
+    message6+= String(n/180.0) + "* 3.1415, " + String((n+10)/180.0);
+    message6+=   " * 3.1415, false); ctx.fillStyle =";
+    message6+=  farbe + ";" ;
+    message6+= "ctx.fill();\n";
+  }
+
+  message6+= "    ctx.beginPath();"
+      "ctx.arc(x, y, radius, 0, 2 * 3.1415, false); "
+      "ctx.lineWidth = 2;"
+      "ctx.strokeStyle = '#003300';"
+      "ctx.stroke();";
+
+  message6 += "ctx.fillStyle = 'black';";   // 238, 250,
+  message6 += "ctx.fillText('S',x-9,        y+radius+35);\n";
+  message6 += "ctx.fillText('N',x-9,        y-radius-15);\n";
+  message6 += "ctx.fillText('W',x-radius-40,y+10);\n";
+  message6 += "ctx.fillText('O',x+radius+12, y+10);\n";
+  
+// Kreuz
+  String message8  =
+      "ctx.beginPath();"
+      "ctx.moveTo(x, y);"
+      "ctx.lineTo(x,y-radius-10);"
+      "ctx.moveTo(x, y);"
+      "ctx.lineTo(x,y+radius+10);"
+      "ctx.moveTo(x, y);"
+      "ctx.lineTo(x+radius+10,y);"
+      "ctx.moveTo(x, y);"
+      "ctx.lineTo(x-radius-10,y);"
+      "ctx.lineWidth = 1;"
+      "ctx.strokeStyle = '#003300';"
+      "ctx.stroke();"
+      ;
+
+  String bild;
+  int farbe_ = BLAU;
+  draw_pic(bild, pfeil, sizeof(pfeil)/sizeof(xy), x, y,  winkel, 1);  
+
+  return (message5 + message6 + message8 + farben[farbe_] + bild);
+}
+#endif
+
+// set up html code for values
+void make_value_text(String &text)
+{
+  text ="<br>"  
+                  "clients: " + String(nb) + "<br>";
+#ifdef SHOW_KOMPASS                  
+  text +=         "Grad: " + String(mygrad,0) + "<br>";
+ if (do_calib)                  
+ {
+   text +=  "C: " + String(CmaxX) + ", " + String(CminX) + ", " + String(CmaxY) + ", " + String(CminY) + "<br>"
+                    "C_: " + String(comp_x) + ", " + String(comp_y) +"<br>";
+   return;
+ }
+#endif
+
+#ifdef USE_TEMP                  
+  text +=         "Temp: " + String(tempC,1) + "C<br>"
+ #ifndef USE_M5STACK 
+                  "Humid:" + String(humidity,1) + "%<br>"
+ #endif
+                  ;                  
+#endif                             
+  text +=          "Volt:"  + String(sensorValue/175.5, 2) + "V<br>";        
+
+  if (modeT==MODE_NODPLUS or modeT==MODE_WLAN or modeT==MODE_NODPLUSFAST)
+  {
+    text +=  "<b>" + String( MODETIMEOUT - (time(NULL) - last_modeT_change) ) + "s bis Sleep</b>"; 
+  }
+}
+
+// set up JS code for painting the canvas
+void paint_main(String &message)
+{
+  DSerial.print(" paint_main ");
+  
+    message =R"=====(       
+    function paintmain()
+    {
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "rgb(0,0,0)";
+    ctx.clearRect(0, 0, canvas.width, canvas.height);    
+  )====="; 
+
+// ab hier flexibler Part der Canvas Befehle
+  
+// wie variabel soll man es machen ? Änderungen hier bedingen auch Änderungen bei den anderen Werten
+// alles mit einem Faktor versehen faktorW faktorH ?
+
+  message += "ctx.fillText(\"" + String(int(z1))+ "cm\",80 ,50 );\n";
+  message +=       "ctx.fillText(\"" + String(int(z4))+ "cm\",540,50 );\n";
+  message +=       "ctx.fillText(\"" + String(int(z2))+ "cm\",80 ,370);\n";
+  message +=       "ctx.fillText(\"" + String(int(z3))+ "cm\",540,370);\n";
+  
+  if ( z1<= HEIGHT_OK and z2<= HEIGHT_OK and z3<= HEIGHT_OK and z4<= HEIGHT_OK ) // test for OK
+    message += "ctx.fillStyle = \"rgb(0,200,0)\";\nctx.fillText(\"OK\",335,30);\n";            
+
+  String s1;
+  // Balken zeichnen
+  draw_value_v3(30 ,18 , z1, MAX_VALUE, HEIGHT_BALKEN_H, WIDTH_BALKEN_H, keilhoehe, s1);
+  message += s1;
+  draw_value_v3(30 ,220 , z2, MAX_VALUE, HEIGHT_BALKEN_H, WIDTH_BALKEN_H, keilhoehe, s1);
+  message += s1;
+  draw_value_v3(640 ,18 , z4, MAX_VALUE, HEIGHT_BALKEN_H, WIDTH_BALKEN_H, keilhoehe, s1);
+  message += s1;
+  draw_value_v3(640 ,220 , z3, MAX_VALUE, HEIGHT_BALKEN_H, WIDTH_BALKEN_H, keilhoehe, s1);
+  message += s1;
+
+  // Winkel vorher begradigen oder gleich beim Ausrechnen
+  
+  message += "ctx.fillStyle = \"rgb(0,0,0)\";";
+  message += "ctx.fillText(\"Pitch:" + String(int(fp_corr*10)/10.0, 1)+ "\",200 ,140 );\n";  
+  message += "ctx.fillText(\"Roll:" + String(int( (fr_corr <-180 ? -1*(360+fr_corr) :-fr_corr) *10)/10.0, 1)+ "\",405 ,140 );\n";  
+  //if (fr_corr <-180)
+    //DSerial.print(-1*(360+fr_corr));
+
+  String bild;
+  int farbe = GRUEN;
+  if      (abs(fp_corr) >=WINKEL_ROT)  farbe=ROT;
+  else if (abs(fp_corr) >=WINKEL_GELB) farbe=GELB;
+  draw_pic(bild, seite, sizeof(seite)/sizeof(xy), 238, 250,  (float)int(-fp_corr*5), 1.3);
+  message += farben[farbe] + bild ;
+
+  farbe = GRUEN;
+  if      (abs(fr_corr) >=WINKEL_ROT)  farbe=ROT;
+  else if (abs(fr_corr) >=WINKEL_GELB) farbe=GELB;
+  draw_pic(bild, back, sizeof(back)/sizeof(xy), 455, 243,  (float)int(-fr_corr*5), 1.3);
+  message += farben[farbe] + bild;  
+
+  #ifdef USE_TEMP        
+    getWeather(); // für WLAN Zugriff eigens aufrufen, ebenso für andere Zugriffe
+  #endif
+
+  String values;
+  make_value_text(values);
+  message += "document.getElementById(\"value_text\").innerHTML = \"" + values + "\";\n "; 
+
+  message += reloadstring;  // Interval umstellen
+
+  if (reloadstring!="")
+  {
+    if (modeT == MODE_FAST)
+    {
+      message += "but=document.getElementById(\"Fast\");\n but.value = \"Slow\";\n ";       
+    }
+    else
+    {
+      message += "but=document.getElementById(\"Fast\");\n but.value= \"Fast\";\n "; 
+    } 
+  }
+  reloadstring="";
+  message += "}\n";  
+}
+
+#ifdef SHOW_KOMPASS
+// set up JS code for painting the canvas for compass
+void paint_compass(String &message)
+{
+    message =R"=====(       
+    function paintcompass()
+    {
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "rgb(0,0,0)";
+    ctx.clearRect(0, 0, canvas.width, canvas.height);    
+  )====="; 
+
+  message += draw_compass(200, 220, 120, "'rgb(120,200,120)'", mygrad);
+
+  String values;
+  make_value_text(values);
+  message += "document.getElementById(\"value_text\").innerHTML = \"" + values + "\";\n "; 
+  
+  message += reloadstring;  // Interval umstellen
+
+  if (reloadstring!="")
+  {
+    if (modeT == MODE_FAST)
+    {
+      message += "but=document.getElementById(\"Fast\");\n but.value = \"Slow\";\n ";       
+    }
+    else
+    {
+      message += "but=document.getElementById(\"Fast\");\n but.value= \"Fast\";\n "; 
+    } 
+  }
+  reloadstring="";
+  
+  message += "}\n";  
+}
+#endif

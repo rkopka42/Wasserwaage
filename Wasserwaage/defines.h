@@ -21,11 +21,11 @@
 #define USE_M5STACK   // nur dann die entsprechenden Sensoren erlauben, bzw. wählen, auch die includes
 
 //#define USE_KOMPASS   // externer Kompaßsensor
+#define USE_M5KOMPASS   // den vom M5 Modul
 #define SHOW_KOMPASS    // nur für die Anzeige
-#define USE_M5KOMPASS // den vom M5 Modul
 
-#define USE_TEMP      // externer Temperatursensor
-#define USE_DISPLAY   // evt. später noch Unterscheidung nach TFT von letzter Version oder M5Stack, erstmal ohne M5 den alten Code
+#define USE_TEMP      // externer Temperatursensor oder vom M5 Modul
+#define USE_DISPLAY   // evt. später noch Unterscheidung nach TFT von letzter Version oder M5Stack, erstmal ohne M5 den alten Code nehmen
 
 // manche Libs geben tft fix vor. Für unterschiedliche Libs daher immer tft_ im Source und mit #define auf das richtige umsetzen
 #ifdef USE_M5STACK
@@ -199,14 +199,14 @@ typedef struct {
   float breite2; // Hinterachse hat mehr Spurbreite(?)
   float fcp;     // Kalibrierwerte -> Hidden ?
   float fcr;
-  int    achse0;  // Index gibt Achsnutzung an xyz   Wert gibt Achse des Sensors an 1 ist die x Achse nach Platinenaufdruck
-  int    achse1;
-  int    achse2;
+  int   achse0;  // Index gibt Achsnutzung an xyz   Wert gibt Achse des Sensors an 1 ist die x Achse nach Platinenaufdruck
+  int   achse1;
+  int   achse2;
                       // Vorzeichen drehen die Richtung um, Index nicht ab 0, da dort kein Vorzeichen geht !
-  int maxX;     // Grenzwerte der Kompaßwerte aus der Kalibrierung
-  int minX;
-  int maxY;
-  int minY;                      
+  int    maxX;     // Grenzwerte der Kompaßwerte aus der Kalibrierung
+  int    minX;
+  int    maxY;
+  int    minY;                      
   float  angle2;   // Rotation um Z Achse UZS  -> unklar ob wirklich alles abgedeckt, aber grundsätzlich sieht es gut aus  
      
   String ssid;    // oder char[] ?
@@ -214,4 +214,13 @@ typedef struct {
   String host;    // unklar
 }  confvalues_t;
 
+extern int   nb; // number of clients
+extern float fp_corr,fr_corr;
+extern float z1,z2,z3,z4;
+extern bool  do_calib;  // compass
+extern float keilhoehe;
+extern float fp,fr;    // auch von Calib (http) benutzt
+
+void get_angle(char *buf, float value);
+void get_height(char *buf_, int val, int max_val, bool left);
 #endif

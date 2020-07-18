@@ -29,46 +29,46 @@ static void trim(char *src)
 // hier auch den Index suchen -> return
 static int parse_line(conf_t cf[], int cfg_elements, char *name, char *val, char *buf)
 {
-    if (cf == NULL || val == NULL || name==NULL)
-        return -1;
-
-    char varname[100];
-    char value[100];
-    //const char* sep = "=\n"; // get also rid of newlines
-    const char* sep = "=\n\r"; // get also rid of newlines
-    
-    char *token;
-    int n;
-    
-    token = strtok(buf, sep);
-    strncpy(varname, token, sizeof(varname));
-    varname[sizeof(varname) - 1] = 0; // making sure that varname is C-String
-    trim(varname);
-    token = strtok(NULL, sep);
-    if (token == NULL)
-    {
-        // line not in format var=val
-        return -1;
-    }
-
-    strncpy(value, token, sizeof value);
-    value[sizeof(varname) - 1] = 0;
-
-  // varname und value 
-    trim(value);
-    strcpy(name, varname);
-    strcpy(val, value);
-    
-    //DSerial.print(" sizeof(config)= " + String(sizeof(config)));
-    
-    for (n=0;n<cfg_elements;n++)
-    {
-      if (strcmp(varname, cf[n].name.c_str()) == 0)
-      {
-        return n;
-      }
-    }
+  if (cf == NULL || val == NULL || name==NULL)
     return -1;
+
+  char varname[100];
+  char value[100];
+  //const char* sep = "=\n"; // get also rid of newlines
+  const char* sep = "=\n\r"; // get also rid of newlines
+  
+  char *token;
+  int n;
+  
+  token = strtok(buf, sep);
+  strncpy(varname, token, sizeof(varname));
+  varname[sizeof(varname) - 1] = 0; // making sure that varname is C-String
+  trim(varname);
+  token = strtok(NULL, sep);
+  if (token == NULL)
+  {
+    // line not in format var=val
+    return -1;
+  }
+
+  strncpy(value, token, sizeof value);
+  value[sizeof(varname) - 1] = 0;
+
+// varname und value 
+  trim(value);
+  strcpy(name, varname);
+  strcpy(val, value);
+  
+  //DSerial.print(" sizeof(config)= " + String(sizeof(config)));
+  
+  for (n=0;n<cfg_elements;n++)
+  {
+    if (strcmp(varname, cf[n].name.c_str()) == 0)
+    {
+      return n;
+    }
+  }
+  return -1;
 }
 
 // aus Struct die Defaultwerte nach cfg suchen und in cv eintragen
@@ -76,24 +76,24 @@ static int parse_line(conf_t cf[], int cfg_elements, char *name, char *val, char
 int read_defaults(conf_t cfg[], int cfg_elements)
 {
   int n;
-   for (n=0;n<cfg_elements;n++)
+  for (n=0;n<cfg_elements;n++)
+  {
+    if (cfg[n].value != NULL)
     {
-      if (cfg[n].value != NULL)
+      if (cfg[n].typ == TYPE_INT or cfg[n].typ == TYPE_INT_HIDDEN or cfg[n].typ==TYPE_INT_DONT_USE)
       {
-        if (cfg[n].typ == TYPE_INT or cfg[n].typ == TYPE_INT_HIDDEN or cfg[n].typ==TYPE_INT_DONT_USE)
-        {
-          *(int*)(cfg[n].value) = cfg[n].def.toInt();    
-        }
-        else if (cfg[n].typ == TYPE_STRING or cfg[n].typ == TYPE_STRING_HIDDEN)
-        {
-          *(String*)(cfg[n].value) = cfg[n].def;
-        }
-        else if (cfg[n].typ == TYPE_FLOAT or cfg[n].typ == TYPE_FLOAT_HIDDEN)
-        {
-          *(float*)(cfg[n].value) = cfg[n].def.toFloat();
-        }
+        *(int*)(cfg[n].value) = cfg[n].def.toInt();    
+      }
+      else if (cfg[n].typ == TYPE_STRING or cfg[n].typ == TYPE_STRING_HIDDEN)
+      {
+        *(String*)(cfg[n].value) = cfg[n].def;
+      }
+      else if (cfg[n].typ == TYPE_FLOAT or cfg[n].typ == TYPE_FLOAT_HIDDEN)
+      {
+        *(float*)(cfg[n].value) = cfg[n].def.toFloat();
       }
     }
+  }
   return 0;
 }
 

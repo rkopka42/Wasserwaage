@@ -7,6 +7,16 @@
 
 #include "Arduino.h"
 
+// Ein Punkt einer gefüllten (oder hohlen) Struktur -> mit Point vereinen ?
+typedef struct {
+ int x;
+ int y;  
+} xy;
+
+extern xy seite[18];
+extern xy back[14];
+extern xy pfeil[6];
+
 // extern fontdatatype MediumNumbers[] PROGMEM =
 // extern fontdatatype BigNumbers[] PROGMEM =
 

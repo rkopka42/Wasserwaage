@@ -8,7 +8,10 @@
  *           28.06.2020 rKop  MODE eingeführt - Spannung und Sleep
  *  0.09.004 04.07.2020 rKop  Anzeige vor Sleep, FAST auch bei Kompaß, Taste für WLAN, AP wieder einschalten, Temp Messung besser, CFG korrigiert
  *  0.09.005 15.07.2020 rKop  kein Tag ! M5Stack Grafik angepaßt und Vektor, Polyfill
- *  0.09.006 16.07.2020? rKop .cpp Files
+ *           17.07.2020 rKop  .cpp Files, Acc Gyro korrigiert (Lib muß geändert werden), Temperaturmessung mit M5 
+ *           18.07.2020 rKop  Umstrukturiert
+ *           
+ *  0.09.006 .07.2020? rKop 
  *  
  *  TODO
  *       
@@ -74,39 +77,33 @@ WebServer server(80); //Server on port 80
  #ifndef USE_M5STACK
   #include "SparkFun_Si7021_Breakout_Library.h" // Temp und Humidity Sensor
 
-//Create Instance of HTU21D or SI7021 temp and humidity sensor (and MPL3115A2 barrometric sensor)
+//Create Instance of HTU21D or SI7021 temp and humidity sensor (and MPL3115A2 barometric sensor)
   Weather sensor;
   #endif
  float humidity = 0;
  float tempC = 0;
 #endif
 
+#include "vars.h"   // globale Variablen
+
 // ADC
 int sensorValue = 0;        // value read from D+
 
 // für GYRO Berechnungen
-float ff[3]={0,0,0},f[3]={0,0,0};
-float fxrot=0,fyrot=0,fzrot=0;
-float fp=0,fr=0;
-int   print_=0;
-float fp_corr,fr_corr;
-float z1,z2,z3,z4;
+static float ff[3]={0,0,0},f[3]={0,0,0};
+static float fxrot=0,fyrot=0,fzrot=0;
+static int   print_=0;
 
-// Kompaßkalibrierung
-int CmaxX=0, CminX=16000, CmaxY=0, CminY=16000;
-
-long last_key=0;    // Zeit in millis
-bool pressed=false;
-long last_keyT=0;    // Zeit in millis
-bool pressedT=false;
+static long last_key=0;    // Zeit in millis
+static bool pressed=false;
+static long last_keyT=0;    // Zeit in millis
+static bool pressedT=false;
 int modeT=MODE_WLAN;
-bool standby=false;
-bool eeprom_ok=false;
-bool do_calib=false;  // compass
-int nb; // number of clients
+//bool standby=false;
+//bool eeprom_ok=false;
 bool Dplus = false;
 time_t last_modeT_change = 0;
-bool spiffs_fail = false;
+static bool spiffs_fail = false;
 String reloadstring="";
 
 // Unterfunktionen
@@ -329,8 +326,7 @@ void setup(void)
   //adc1_config_channel_atten(ADC1_CHANNEL_3, ADC_ATTEN_DB_0); //  Verstärkung 0dB =1,1 V Max   // GPIO39
     
 #ifdef USE_DISPLAY
- // delay(3000);
- delay(2000);
+  delay(2000);
   tft_.fillScreen(BLACK);
 #endif  
 }
@@ -346,12 +342,12 @@ void loop(void)
   static unsigned long next_LED=0;
   static bool last_LED_on=false;
 
-  long        time_T        =millis()-last_keyT; // Zeit gedrückt
-  bool        press_shortT  =false, press_long_activeT=false, press_longT=false;
-  time_t tt;
-  int modeT_old;
+  long    time_T        =millis()-last_keyT; // Zeit gedrückt
+  bool    press_shortT  =false, press_long_activeT=false, press_longT=false;
+  time_t  tt;
+  int     modeT_old;
   
-  server.handleClient();          //Handle client requests
+  server.handleClient();          // Handle client requests
 
   tt = time(NULL);
   
@@ -560,7 +556,6 @@ void loop(void)
 #ifdef USE_DISPLAY
   if (1)
 #else  
-  //if (!standby)
   if (modeT==MODE_SLOW or modeT==MODE_FAST or modeT==MODE_NODPLUS or modeT==MODE_NODPLUSFAST)
 #endif
   {
@@ -652,9 +647,9 @@ void loop(void)
    
       // now exchange from array    -> ff[0] is x in real (z shows down, x in driving direction)
   
-        ff[0] = f[ (int)(abs(confvalues.achse0)-1) ] * (confvalues.achse0 > 0 ? 1 : -1) ;
-        ff[1] = f[ (int)(abs(confvalues.achse1)-1) ] * (confvalues.achse1 > 0 ? 1 : -1) ;
-        ff[2] = f[ (int)(abs(confvalues.achse2)-1) ] * (confvalues.achse2 > 0 ? 1 : -1) ;       
+      ff[0] = f[ (int)(abs(confvalues.achse0)-1) ] * (confvalues.achse0 > 0 ? 1 : -1) ;
+      ff[1] = f[ (int)(abs(confvalues.achse1)-1) ] * (confvalues.achse1 > 0 ? 1 : -1) ;
+      ff[2] = f[ (int)(abs(confvalues.achse2)-1) ] * (confvalues.achse2 > 0 ? 1 : -1) ;       
 #if 0
     for (int n=0;n<3;n++)
       {
@@ -750,10 +745,6 @@ void loop(void)
         int ret = get_compass();  // hier auch eine Mittelung ?
         if (ret !=0)  DSerial.println("Error with compass: " + String(ret));
 #endif       
-
-#ifdef USE_TEMP        
-//        getWeather(); // für WLAN Zugriff eigens aufrufen
-#endif
       }
       print_++;
   

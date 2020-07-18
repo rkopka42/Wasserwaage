@@ -4,6 +4,30 @@
 
 #include "grafics.h"
 
+// Womografiken
+
+// alles relativ
+xy seite[18] = {
+  {0,0},   {-40,25},
+  {15,0},   {5,10},   {10,0},   {5,-10},
+  {30,0},   {5,10},   {10,0},   {5,-10},
+  {15,0},   {0,-60},   {-90,0},   {0,20},  {20,0},   {-20,20},   {-10,0}, {0,20}
+};
+
+// alles relativ
+xy back[14] = {
+  {0,0},  {-30,30}, 
+  {10,0},   {0,10},   {10,0},   {0,-10}, {20,0},  // l Rad
+  {0,10},   {10,0},   {0,-10},  {10,0}, // r Rad
+  
+  {0,-60},   {-60,0},   {0,60}  // Aufbau noch ohne Spiegel
+};
+
+// alles relativ
+xy pfeil[6] = {
+  {0,0},  {0,20}, 
+  {-30,-20}, {30,-120}, {30,+120}, {-30,20}
+};
 // extern fontdatatype MediumNumbers[] PROGMEM =
 // extern fontdatatype BigNumbers[] PROGMEM =
 
