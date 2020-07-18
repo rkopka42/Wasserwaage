@@ -788,8 +788,27 @@ void paint_main(String &message)
   draw_value_v3(640 ,220 , z3, MAX_VALUE, HEIGHT_BALKEN_H, WIDTH_BALKEN_H, keilhoehe, s1);
   message += s1;
 
-  // Winkel vorher begradigen oder gleich beim Ausrechnen
-  
+// Winkel multiplizieren, aber auch begrenzen - gibts in der Realität nicht, aber trotzdem min max ?
+  float fp_corr_;               // Wert für die Anzeige vergrößern und begrenzen
+  if (int(fp_corr) >0)
+  {
+    fp_corr_ = min((float)int(fp_corr*5),(float)45.0);
+  }
+  else
+  {
+    fp_corr_ = max((float)int(fp_corr*5),(float)-45.0);
+  }
+
+  float fr_corr_;
+  if (int(fr_corr) >0)
+  {
+    fr_corr_ = min((float)int(fr_corr*5),(float)45.0);
+  }
+  else
+  {
+    fr_corr_ = max((float)int(fr_corr*5),(float)-45.0);
+  }
+      
   message += "ctx.fillStyle = \"rgb(0,0,0)\";";
   message += "ctx.fillText(\"Pitch:" + String(int(fp_corr*10)/10.0, 1)+ "\",200 ,140 );\n";  
   message += "ctx.fillText(\"Roll:" + String(int( (fr_corr <-180 ? -1*(360+fr_corr) :-fr_corr) *10)/10.0, 1)+ "\",405 ,140 );\n";  
@@ -800,13 +819,13 @@ void paint_main(String &message)
   int farbe = GRUEN;
   if      (abs(fp_corr) >=WINKEL_ROT)  farbe=ROT;
   else if (abs(fp_corr) >=WINKEL_GELB) farbe=GELB;
-  draw_pic(bild, seite, sizeof(seite)/sizeof(xy), 238, 250,  (float)int(-fp_corr*5), 1.3);
+  draw_pic(bild, seite, sizeof(seite)/sizeof(xy), 238, 250,  (float)int(-fp_corr_), 1.3);
   message += farben[farbe] + bild ;
 
   farbe = GRUEN;
   if      (abs(fr_corr) >=WINKEL_ROT)  farbe=ROT;
   else if (abs(fr_corr) >=WINKEL_GELB) farbe=GELB;
-  draw_pic(bild, back, sizeof(back)/sizeof(xy), 455, 243,  (float)int(-fr_corr*5), 1.3);
+  draw_pic(bild, back, sizeof(back)/sizeof(xy), 455, 243,  (float)int(-fr_corr_), 1.3);
   message += farben[farbe] + bild;  
 
   #ifdef USE_TEMP        
@@ -872,3 +891,36 @@ void paint_compass(String &message)
   message += "}\n";  
 }
 #endif
+
+
+void handleGetInfo() 
+{  
+  String calib = server.arg("Calib");
+  // Button Wert verwenden
+  if (calib == "Calib")
+  {
+  }
+
+  String message = "pitch=" + String(fp_corr, 2)+ "\nroll=" + String(fr_corr, 2)+ "\n";
+  message += "clients=" + String(nb) + "\n";
+#ifdef SHOW_KOMPASS                  
+  message += "grad=" + String(mygrad,0) + "\n";
+#endif
+
+#ifdef USE_TEMP                  
+  message += "temp=" + String(tempC,1) + "\n"
+ #ifndef USE_M5STACK 
+          "humid=" + String(humidity,1) + "\n"
+ #endif
+                  ;                  
+#endif                             
+  message += "volt="  + String(sensorValue/175.5, 2) + "\n";        
+  message += "dplus=" + String(Dplus)+ "\n";
+  if (modeT==MODE_NODPLUS or modeT==MODE_WLAN or modeT==MODE_NODPLUSFAST)
+  {
+    message +=  "tilsleep=" + String( MODETIMEOUT - (time(NULL) - last_modeT_change) ) + "\n"; 
+  }
+  
+  server.send(200, "text/plain", message);
+  DSerial.println("Root 200");
+}

@@ -9,7 +9,7 @@
  *  0.09.004 04.07.2020 rKop  Anzeige vor Sleep, FAST auch bei Kompaß, Taste für WLAN, AP wieder einschalten, Temp Messung besser, CFG korrigiert
  *  0.09.005 15.07.2020 rKop  kein Tag ! M5Stack Grafik angepaßt und Vektor, Polyfill
  *           17.07.2020 rKop  .cpp Files, Acc Gyro korrigiert (Lib muß geändert werden), Temperaturmessung mit M5 
- *           18.07.2020 rKop  Umstrukturiert
+ *           18.07.2020 rKop  Umstrukturiert, http Werteabfrage, Canvas Bild auch im Winkel begrenzen
  *           
  *  0.09.006 .07.2020? rKop 
  *  
@@ -223,7 +223,8 @@ void setup(void)
   server.on("/calib.html", handleCalib);
   server.on("/config.html", handleConfig);
   server.on("/main.js", handleMain);
-
+  server.on("/getinfo.html", handleGetInfo);
+  
 #ifdef SHOW_KOMPASS
   server.on("/compass.html", handleCompass);
   server.on("/compass.js", handleJSCompass);
