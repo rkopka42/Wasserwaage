@@ -21,11 +21,11 @@
 #define USE_M5STACK   // nur dann die entsprechenden Sensoren erlauben, bzw. wählen, auch die includes
 
 //#define USE_KOMPASS   // externer Kompaßsensor
-#define USE_M5KOMPASS   // den vom M5 Modul
+//#define USE_M5KOMPASS   // den vom M5 Modul
 #define SHOW_KOMPASS    // nur für die Anzeige
 
 #define USE_TEMP      // externer Temperatursensor oder vom M5 Modul
-#define USE_DISPLAY   // evt. später noch Unterscheidung nach TFT von letzter Version oder M5Stack, erstmal ohne M5 den alten Code nehmen
+//#define USE_DISPLAY   // evt. später noch Unterscheidung nach TFT von letzter Version oder M5Stack, erstmal ohne M5 den alten Code nehmen
 
 // manche Libs geben tft fix vor. Für unterschiedliche Libs daher immer tft_ im Source und mit #define auf das richtige umsetzen
 #ifdef USE_M5STACK
